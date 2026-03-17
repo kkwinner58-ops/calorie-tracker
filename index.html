@@ -518,10 +518,10 @@
         <div style="font-size:11px;color:var(--muted);margin-bottom:4px">基準量</div>
         <div style="display:flex;align-items:center;gap:4px">
           <select id="calcBase" style="font-size:13px;padding:6px 4px;border-radius:8px;border:1px solid var(--border);background:white" onchange="calcCalories()">
-            <option value="100">100ml</option>
-            <option value="100">100g</option>
-            <option value="1">1個</option>
-            <option value="1">1枚</option>
+            <option value="100">100ml当たり</option>
+            <option value="100">100g当たり</option>
+            <option value="1">1個当たり</option>
+            <option value="1">1枚当たり</option>
           </select>
         </div>
       </div>
@@ -1181,6 +1181,41 @@ function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ======== Calculator ========
+function calcCalories() {
+  const unit = parseFloat(document.getElementById('calcUnit').value.trim()) || 0;
+  const base = parseFloat(document.getElementById('calcBase').value) || 1;
+  const amount = parseFloat(document.getElementById('calcAmount').value.trim()) || 0;
+  const resultEl = document.getElementById('calcResult');
+  if (unit > 0 && amount > 0) {
+    const result = Math.round((unit / base) * amount * 10) / 10;
+    resultEl.textContent = result + ' kcal';
+    resultEl.dataset.value = result;
+  } else {
+    resultEl.textContent = '\u2014';
+    resultEl.dataset.value = '0';
+  }
+}
+
+function addCalcResult() {
+  const result = parseFloat(document.getElementById('calcResult').dataset.value) || 0;
+  const label = document.getElementById('calcLabel').value || '\u98df\u54c1';
+  if (!result) { showToast('\u26a0\ufe0f \u8a08\u7b97\u7d50\u679c\u304c\u3042\u308a\u307e\u305b\u3093'); return; }
+  addMealRow(label, result, 'calc');
+  document.getElementById('calcUnit').value = '';
+  document.getElementById('calcAmount').value = '';
+  document.getElementById('calcLabel').value = '';
+  document.getElementById('calcResult').textContent = '\u2014';
+  document.getElementById('calcResult').dataset.value = '0';
+  showToast('\u2705 ' + label + '\uff08' + result + 'kcal\uff09\u3092\u8ffd\u52a0\u3057\u307e\u3057\u305f');
+}
+
+function toggleFlag(btn) {
+  const wrap = btn.parentElement;
+  wrap.querySelectorAll('.flag-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
 }
 
 // ======== Load today ========
