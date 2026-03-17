@@ -1,0 +1,1133 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>カロリー記録</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #F5F3EE;
+    --card: #FFFFFF;
+    --accent: #D4581A;
+    --accent-light: #F5E6DC;
+    --text: #1A1814;
+    --muted: #8C8880;
+    --border: #E8E4DC;
+    --green: #2D7A4F;
+    --green-bg: #E8F4EE;
+    --red: #C0392B;
+    --red-bg: #FDECEA;
+    --shadow: 0 2px 12px rgba(0,0,0,0.07);
+    --ai: #5B4FCF;
+    --ai-light: #EDEAFB;
+    --fix: #1565C0;
+    --fix-light: #E3F0FB;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0 0 60px;
+  }
+
+  /* ---- Header / Tab ---- */
+  header {
+    background: var(--accent);
+    padding: 16px 20px 0;
+    position: sticky; top: 0; z-index: 100;
+    box-shadow: 0 2px 8px rgba(212,88,26,0.3);
+  }
+  .header-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  header h1 { font-size: 17px; font-weight: 700; color: white; letter-spacing: 0.05em; }
+  .date-display { font-family: 'DM Mono', monospace; font-size: 12px; color: rgba(255,255,255,0.75); margin-top: 2px; }
+
+  .tab-bar {
+    display: flex; gap: 4px; margin-top: 12px;
+  }
+  .tab-btn {
+    flex: 1; padding: 8px 4px; border: none;
+    background: rgba(255,255,255,0.18);
+    color: rgba(255,255,255,0.8);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 12px; font-weight: 500;
+    border-radius: 8px 8px 0 0; cursor: pointer;
+    transition: all 0.15s; letter-spacing: 0.03em;
+  }
+  .tab-btn.active {
+    background: var(--bg);
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .container { padding: 16px; max-width: 480px; margin: 0 auto; }
+
+  /* ---- Summary Bar ---- */
+  .summary-bar {
+    background: var(--text); border-radius: 14px;
+    padding: 16px 18px; margin-bottom: 16px;
+    display: grid; grid-template-columns: 1fr 1px 1fr 1px 1fr;
+    gap: 8px; align-items: center;
+  }
+  .summary-item { text-align: center; }
+  .summary-label { font-size: 10px; color: rgba(255,255,255,0.55); letter-spacing: 0.06em; font-weight: 500; margin-bottom: 4px; }
+  .summary-value { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; color: white; }
+  .summary-value.positive { color: #FF8A65; }
+  .summary-value.negative { color: #81C995; }
+  .summary-divider { background: rgba(255,255,255,0.12); height: 32px; width: 1px; margin: auto; }
+
+  /* ---- Cards ---- */
+  .card {
+    background: var(--card); border-radius: 14px;
+    padding: 18px; margin-bottom: 14px;
+    box-shadow: var(--shadow); border: 1px solid var(--border);
+  }
+  .card-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    color: var(--muted); text-transform: uppercase; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .card-title::before {
+    content: ''; width: 3px; height: 12px;
+    background: var(--accent); border-radius: 2px;
+  }
+
+  .field-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+  }
+  .field-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .field-label { font-size: 14px; color: var(--text); }
+  .field-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .field-input-wrap { display: flex; align-items: center; gap: 4px; }
+
+  input[type="number"], input[type="text"] {
+    font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500;
+    color: var(--text); border: none; background: var(--bg);
+    border-radius: 8px; padding: 6px 10px; text-align: right;
+    width: 100px; -webkit-appearance: none; outline: none; transition: background 0.15s;
+  }
+  input:focus { background: var(--accent-light); }
+  input::placeholder { color: #C8C4BC; }
+  .unit { font-size: 12px; color: var(--muted); min-width: 26px; }
+  .auto-value { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; color: var(--accent); }
+
+  /* ---- Meal Items ---- */
+  .meal-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid var(--border);
+  }
+  .meal-item:last-child { border-bottom: none; }
+  .meal-icon { font-size: 22px; width: 32px; text-align: center; flex-shrink: 0; }
+  .meal-label { font-size: 14px; color: var(--text); }
+  .meal-source {
+    font-size: 10px; color: var(--ai); background: var(--ai-light);
+    padding: 2px 6px; border-radius: 4px; margin-top: 2px; display: inline-block;
+  }
+  .meal-input { width: 90px !important; }
+
+  .meal-total-row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 14px; padding-top: 14px; border-top: 2px solid var(--border);
+  }
+  .meal-total-label { font-size: 13px; font-weight: 700; }
+  .meal-total-value { font-family: 'DM Mono', monospace; font-size: 24px; font-weight: 500; }
+
+  .balance-display {
+    border-radius: 10px; padding: 14px 16px;
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 14px; transition: background 0.3s;
+  }
+  .balance-display.surplus { background: var(--red-bg); }
+  .balance-display.deficit { background: var(--green-bg); }
+  .balance-display.neutral { background: var(--bg); }
+  .balance-label { font-size: 13px; font-weight: 700; }
+  .balance-display.surplus .balance-label { color: var(--red); }
+  .balance-display.deficit .balance-label { color: var(--green); }
+  .balance-value { font-family: 'DM Mono', monospace; font-size: 26px; font-weight: 500; }
+  .balance-display.surplus .balance-value { color: var(--red); }
+  .balance-display.deficit .balance-value { color: var(--green); }
+  .balance-display.neutral .balance-value { color: var(--muted); }
+
+  /* ---- AI Upload ---- */
+  .ai-upload-card {
+    background: linear-gradient(135deg, #EDE9FB 0%, #F0EEFF 100%);
+    border: 1.5px dashed var(--ai);
+    border-radius: 14px; padding: 18px; margin-bottom: 14px;
+  }
+  .ai-card-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    color: var(--ai); text-transform: uppercase; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .upload-zone {
+    border: 2px dashed rgba(91,79,207,0.3); border-radius: 10px;
+    padding: 20px; text-align: center; cursor: pointer;
+    background: rgba(255,255,255,0.6); position: relative;
+    transition: all 0.2s;
+  }
+  .upload-zone:hover { border-color: var(--ai); background: rgba(255,255,255,0.9); }
+  .upload-zone input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer;
+    width: 100%; height: 100%; font-size: 0; padding: 0; background: none;
+  }
+  .upload-icon { font-size: 32px; margin-bottom: 8px; }
+  .upload-text { font-size: 13px; color: var(--ai); font-weight: 500; }
+  .upload-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  .preview-wrap { margin-top: 12px; display: none; position: relative; }
+  .preview-wrap img {
+    width: 100%; max-height: 200px; object-fit: contain;
+    border-radius: 8px; border: 1px solid var(--border);
+  }
+  .clear-preview {
+    position: absolute; top: 6px; right: 6px;
+    background: rgba(0,0,0,0.6); color: white; border: none;
+    border-radius: 50%; width: 24px; height: 24px; font-size: 12px;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .analyze-btn {
+    width: 100%; margin-top: 12px; padding: 13px;
+    background: var(--ai); border: none; border-radius: 10px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 14px; font-weight: 700; color: white;
+    cursor: pointer; display: none; align-items: center;
+    justify-content: center; gap: 8px;
+  }
+  .analyze-btn:active { opacity: 0.8; }
+
+  .ai-result {
+    margin-top: 12px; display: none; background: white;
+    border-radius: 10px; border: 1px solid rgba(91,79,207,0.2); overflow: hidden;
+  }
+  .ai-result-header {
+    background: var(--ai); padding: 10px 14px;
+    font-size: 12px; font-weight: 700; color: white;
+  }
+  .ai-result-body { padding: 14px; }
+  .ai-item-name { font-size: 15px; font-weight: 700; margin-bottom: 8px; }
+  .ai-calc-detail {
+    font-size: 12px; color: var(--muted); background: var(--bg);
+    padding: 8px 10px; border-radius: 6px; margin-bottom: 10px;
+    font-family: 'DM Mono', monospace; white-space: pre-line;
+  }
+  .ai-kcal-big {
+    font-family: 'DM Mono', monospace; font-size: 28px; font-weight: 700;
+    color: var(--accent); text-align: center; margin: 8px 0;
+  }
+  .ai-note { font-size: 11px; color: var(--muted); line-height: 1.6; }
+  .add-to-log-btn {
+    width: 100%; padding: 12px; background: var(--accent);
+    border: none; border-radius: 8px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px; font-weight: 700; color: white;
+    cursor: pointer; margin-top: 10px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+
+  .spinner {
+    width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white; border-radius: 50%;
+    animation: spin 0.7s linear infinite; display: none;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ---- Buttons ---- */
+  .add-btn {
+    width: 100%; padding: 11px; margin-top: 10px;
+    background: none; border: 1.5px dashed var(--border);
+    border-radius: 10px; font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px; color: var(--muted); cursor: pointer;
+  }
+  .add-btn:active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+
+  .save-btn {
+    width: 100%; padding: 16px; background: var(--accent);
+    border: none; border-radius: 14px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 16px; font-weight: 700; color: white;
+    cursor: pointer; letter-spacing: 0.05em;
+    box-shadow: 0 4px 16px rgba(212,88,26,0.35);
+    margin-top: 4px;
+  }
+  .save-btn:active { transform: scale(0.98); opacity: 0.9; }
+
+  .history-toggle {
+    width: 100%; background: none; border: 1.5px solid var(--border);
+    border-radius: 14px; padding: 13px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px; color: var(--muted); cursor: pointer;
+    margin-top: 6px; display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .history-list { margin-top: 12px; display: none; }
+  .history-list.open { display: block; }
+  .history-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 14px; background: var(--card);
+    border-radius: 10px; margin-bottom: 8px;
+    border: 1px solid var(--border); font-size: 13px; gap: 8px;
+  }
+  .history-date { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); flex-shrink: 0; }
+  .history-weight { font-weight: 700; flex-shrink: 0; }
+  .history-balance { font-family: 'DM Mono', monospace; font-size: 13px; flex-shrink: 0; }
+  .history-balance.neg { color: var(--green); }
+  .history-balance.pos { color: var(--red); }
+
+  .export-btn {
+    width: 100%; padding: 12px; background: var(--text);
+    border: none; border-radius: 10px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px; font-weight: 700; color: white;
+    cursor: pointer; margin-top: 10px;
+  }
+
+  /* ---- CORRECTION TAB ---- */
+  .fix-card {
+    background: linear-gradient(135deg, #E3F0FB 0%, #EBF4FD 100%);
+    border: 1.5px solid var(--fix);
+    border-radius: 14px; padding: 18px; margin-bottom: 14px;
+  }
+  .fix-card-title {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    color: var(--fix); text-transform: uppercase; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  .date-selector {
+    display: flex; gap: 8px; margin-bottom: 16px;
+  }
+  .date-sel-btn {
+    flex: 1; padding: 10px 6px; border: 1.5px solid var(--border);
+    border-radius: 10px; background: white;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 12px; font-weight: 500; color: var(--muted);
+    cursor: pointer; text-align: center; transition: all 0.15s;
+  }
+  .date-sel-btn.active {
+    background: var(--fix); color: white; border-color: var(--fix);
+  }
+
+  .fix-row {
+    background: white; border-radius: 10px; padding: 14px;
+    margin-bottom: 10px; border: 1px solid var(--border);
+  }
+  .fix-row-title {
+    font-size: 12px; font-weight: 700; color: var(--fix);
+    margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+  }
+  .fix-compare {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 8px; margin-bottom: 10px;
+  }
+  .fix-col { text-align: center; }
+  .fix-col-label { font-size: 10px; color: var(--muted); margin-bottom: 4px; letter-spacing: 0.05em; }
+  .fix-col-value {
+    font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 700;
+  }
+  .fix-col-value.original { color: var(--muted); }
+  .fix-col-value.corrected { color: var(--fix); }
+
+  .fix-input-wrap {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--bg); border-radius: 8px; padding: 6px 10px;
+  }
+  .fix-input-label { font-size: 12px; color: var(--muted); flex: 1; }
+  .fix-input-wrap input { width: 90px !important; background: white !important; }
+
+  .diff-badge {
+    display: inline-block; padding: 3px 10px; border-radius: 100px;
+    font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 700;
+    margin-top: 8px;
+  }
+  .diff-badge.over { background: var(--red-bg); color: var(--red); }
+  .diff-badge.under { background: var(--green-bg); color: var(--green); }
+  .diff-badge.exact { background: var(--bg); color: var(--muted); }
+
+  .accuracy-bar-wrap { margin-top: 10px; }
+  .accuracy-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .accuracy-bar { height: 6px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .accuracy-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+  .accuracy-fill.good { background: var(--green); }
+  .accuracy-fill.warn { background: #F5A623; }
+  .accuracy-fill.bad { background: var(--red); }
+
+  .fix-save-btn {
+    width: 100%; padding: 14px; background: var(--fix);
+    border: none; border-radius: 12px;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 15px; font-weight: 700; color: white;
+    cursor: pointer; margin-top: 6px;
+    box-shadow: 0 4px 14px rgba(21,101,192,0.3);
+  }
+
+  /* ---- ANALYSIS TAB ---- */
+  .analysis-empty {
+    text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px;
+  }
+  .stat-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px;
+  }
+  .stat-card {
+    background: var(--card); border-radius: 12px; padding: 14px;
+    border: 1px solid var(--border); text-align: center;
+  }
+  .stat-card-label { font-size: 10px; color: var(--muted); letter-spacing: 0.06em; margin-bottom: 6px; }
+  .stat-card-value { font-family: 'DM Mono', monospace; font-size: 24px; font-weight: 700; color: var(--text); }
+  .stat-card-unit { font-size: 11px; color: var(--muted); }
+  .stat-card-sub { font-size: 11px; color: var(--muted); margin-top: 4px; }
+
+  .accuracy-summary {
+    background: var(--card); border-radius: 12px; padding: 16px;
+    border: 1px solid var(--border); margin-bottom: 14px;
+  }
+  .acc-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+  .acc-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px;
+  }
+  .acc-row:last-child { border-bottom: none; }
+
+  .weight-chart { background: var(--card); border-radius: 12px; padding: 16px; border: 1px solid var(--border); margin-bottom: 14px; }
+  .chart-title { font-size: 12px; font-weight: 700; color: var(--text); margin-bottom: 12px; }
+  .chart-bars { display: flex; align-items: flex-end; gap: 4px; height: 80px; }
+  .chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .chart-bar { width: 100%; border-radius: 3px 3px 0 0; min-height: 4px; transition: height 0.4s; }
+  .chart-bar.surplus { background: var(--red); opacity: 0.7; }
+  .chart-bar.deficit { background: var(--green); opacity: 0.7; }
+  .chart-bar.zero { background: var(--border); }
+  .chart-date { font-size: 9px; color: var(--muted); }
+
+  /* ---- Toast ---- */
+  .toast {
+    position: fixed; bottom: 30px; left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--text); color: white;
+    padding: 12px 24px; border-radius: 100px;
+    font-size: 13px; font-weight: 500;
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    z-index: 999; white-space: nowrap; pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div>
+      <h1>🔥 カロリー記録</h1>
+      <div class="date-display" id="headerDate"></div>
+    </div>
+  </div>
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchTab('today')">📝 今日</button>
+    <button class="tab-btn" onclick="switchTab('fix')">✏️ 前日修正</button>
+    <button class="tab-btn" onclick="switchTab('analysis')">📊 分析</button>
+    <button class="tab-btn" onclick="switchTab('history')">📋 履歴</button>
+  </div>
+</header>
+
+<!-- ==================== TAB: 今日 ==================== -->
+<div class="tab-content active" id="tab-today">
+<div class="container">
+
+  <div class="summary-bar">
+    <div class="summary-item">
+      <div class="summary-label">メンテ</div>
+      <div class="summary-value" id="summaryMaint">—</div>
+      <div class="summary-label">kcal</div>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-item">
+      <div class="summary-label">摂取</div>
+      <div class="summary-value" id="summaryIntake">0</div>
+      <div class="summary-label">kcal</div>
+    </div>
+    <div class="summary-divider"></div>
+    <div class="summary-item">
+      <div class="summary-label">収支</div>
+      <div class="summary-value" id="summaryBalance">—</div>
+      <div class="summary-label">kcal</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">基本情報</div>
+    <div class="field-row">
+      <div><div class="field-label">日付</div></div>
+      <div class="field-input-wrap">
+        <input type="text" id="dateInput" style="width:140px;font-size:14px;">
+      </div>
+    </div>
+    <div class="field-row">
+      <div>
+        <div class="field-label">体重</div>
+        <div class="field-sub">今朝の計測値</div>
+      </div>
+      <div class="field-input-wrap">
+        <input type="text" id="weightInput" placeholder="63.0" step="0.1" min="40" max="120" inputmode="decimal">
+        <span class="unit">kg</span>
+      </div>
+    </div>
+    <div class="field-row" style="border-bottom:none">
+      <div>
+        <div class="field-label">メンテナンスカロリー</div>
+        <div class="field-sub">Mifflin式 × 1.375（自動計算）</div>
+      </div>
+      <div class="field-input-wrap">
+        <span class="auto-value" id="maintCalc">—</span>
+        <span class="unit">kcal</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Upload -->
+  <div class="ai-upload-card">
+    <div class="ai-card-title">🤖 AI カロリー読み取り</div>
+    <div class="upload-zone">
+      <input type="file" id="imageInput" accept="image/*" capture="environment">
+      <div class="upload-icon">📸</div>
+      <div class="upload-text">写真をタップして選択</div>
+      <div class="upload-sub">缶・パッケージ・料理の写真をアップロード</div>
+    </div>
+    <div class="preview-wrap" id="previewWrap">
+      <img id="previewImg" src="" alt="preview">
+      <button class="clear-preview" onclick="clearImage()">✕</button>
+    </div>
+    <button class="analyze-btn" id="analyzeBtn" onclick="analyzeImage()">
+      <div class="spinner" id="spinner"></div>
+      <span id="analyzeBtnText">🔍 Claudeで解析する</span>
+    </button>
+    <div class="ai-result" id="aiResult">
+      <div class="ai-result-header">✅ 解析結果</div>
+      <div class="ai-result-body">
+        <div class="ai-item-name" id="aiItemName"></div>
+        <div class="ai-calc-detail" id="aiCalcDetail"></div>
+        <div class="ai-kcal-big" id="aiKcal"></div>
+        <div class="ai-note" id="aiNote"></div>
+        <button class="add-to-log-btn" onclick="addAiResult()">➕ 食事ログに追加</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Meal Log -->
+  <div class="card">
+    <div class="card-title">食事・飲み物ログ</div>
+    <div id="mealList">
+      <div class="meal-item">
+        <div class="meal-icon">🌅</div>
+        <div style="flex:1"><div class="meal-label">朝食</div></div>
+        <div class="field-input-wrap">
+          <input type="text" class="meal-input meal-kcal" placeholder="0">
+          <span class="unit">kcal</span>
+        </div>
+      </div>
+      <div class="meal-item">
+        <div class="meal-icon">☀️</div>
+        <div style="flex:1"><div class="meal-label">昼食</div></div>
+        <div class="field-input-wrap">
+          <input type="text" class="meal-input meal-kcal" placeholder="0">
+          <span class="unit">kcal</span>
+        </div>
+      </div>
+      <div class="meal-item">
+        <div class="meal-icon">🌙</div>
+        <div style="flex:1"><div class="meal-label">夕食</div></div>
+        <div class="field-input-wrap">
+          <input type="text" class="meal-input meal-kcal" placeholder="0">
+          <span class="unit">kcal</span>
+        </div>
+      </div>
+      <div class="meal-item">
+        <div class="meal-icon">☕</div>
+        <div style="flex:1"><div class="meal-label">間食・飲み物</div></div>
+        <div class="field-input-wrap">
+          <input type="text" class="meal-input meal-kcal" placeholder="0">
+          <span class="unit">kcal</span>
+        </div>
+      </div>
+    </div>
+    <button class="add-btn" onclick="addMealRow()">＋ 行を追加する</button>
+    <div class="meal-total-row">
+      <div class="meal-total-label">合計摂取カロリー</div>
+      <div>
+        <span class="meal-total-value" id="totalIntake">0</span>
+        <span class="unit" style="font-size:14px">kcal</span>
+      </div>
+    </div>
+    <div class="balance-display neutral" id="balanceDisplay">
+      <div class="balance-label" id="balanceLabel">収支</div>
+      <div>
+        <span class="balance-value" id="balanceValue">—</span>
+        <span class="unit" style="font-size:14px">kcal</span>
+      </div>
+    </div>
+  </div>
+
+  <button class="save-btn" onclick="saveRecord()">✅ 今日の記録を保存</button>
+  <button class="export-btn" onclick="exportCSV()" style="margin-top:10px">📥 CSVダウンロード（Cowork用）</button>
+
+</div>
+</div>
+
+<!-- ==================== TAB: 前日修正 ==================== -->
+<div class="tab-content" id="tab-fix">
+<div class="container">
+
+  <div class="fix-card">
+    <div class="fix-card-title">✏️ 前日の記録を修正する</div>
+    <p style="font-size:12px;color:var(--fix);margin-bottom:14px;line-height:1.6">
+      翌朝、実際の体重変化から前日の摂取カロリーを修正します。<br>
+      誤差を蓄積してGemの推定精度向上に役立てます。
+    </p>
+
+    <div class="date-selector" id="dateSelector"></div>
+
+    <div id="fixContent">
+      <div class="analysis-empty">修正する日付を選択してください</div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ==================== TAB: 分析 ==================== -->
+<div class="tab-content" id="tab-analysis">
+<div class="container" id="analysisContainer">
+  <div class="analysis-empty">記録が3日以上になると<br>分析が表示されます</div>
+</div>
+</div>
+
+<!-- ==================== TAB: 履歴 ==================== -->
+<div class="tab-content" id="tab-history">
+<div class="container">
+  <div class="history-list open" id="historyList" style="display:block"></div>
+  <button class="export-btn" onclick="exportCSV()">📥 CSVダウンロード（Cowork用）</button>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ======== Constants ========
+const HEIGHT = 176, AGE = 64, ACTIVITY = 1.375;
+const DAYS = ['日','月','火','水','木','金','土'];
+
+// ======== Init ========
+const today = new Date();
+const todayKey = fmt(today);
+
+function fmt(d) {
+  return d.getFullYear() + '/' +
+    String(d.getMonth()+1).padStart(2,'0') + '/' +
+    String(d.getDate()).padStart(2,'0') + ' (' + DAYS[d.getDay()] + ')';
+}
+function fmtShort(d) {
+  return String(d.getMonth()+1) + '/' + String(d.getDate()).padStart(2,'0');
+}
+
+document.getElementById('headerDate').textContent = todayKey;
+document.getElementById('dateInput').value = todayKey;
+
+// ======== Tab Switch ========
+function switchTab(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+  if (name === 'fix') renderFixTab();
+  if (name === 'analysis') renderAnalysis();
+  if (name === 'history') renderHistory();
+}
+
+// ======== Storage ========
+function getHistory() { return JSON.parse(localStorage.getItem('calHistory') || '[]'); }
+function saveHistory(h) { localStorage.setItem('calHistory', JSON.stringify(h)); }
+
+// ======== Maint Calc ========
+function calcMaint(weight) {
+  if (!weight || weight < 30) return null;
+  return Math.round((10 * weight + 6.25 * HEIGHT - 5 * AGE + 5) * ACTIVITY);
+}
+
+// ======== Today Tab ========
+function updateAll() {
+  const weight = parseFloat(document.getElementById('weightInput').value.trim());
+  const maint = calcMaint(weight);
+
+  const maintEl = document.getElementById('maintCalc');
+  maintEl.textContent = maint ? maint.toLocaleString() : '—';
+  document.getElementById('summaryMaint').textContent = maint ? maint.toLocaleString() : '—';
+
+  let total = 0;
+  document.querySelectorAll('.meal-kcal').forEach(i => { total += parseFloat(i.value.trim()) || 0; });
+  document.getElementById('totalIntake').textContent = total.toLocaleString();
+  document.getElementById('summaryIntake').textContent = total.toLocaleString();
+
+  const bd = document.getElementById('balanceDisplay');
+  const bl = document.getElementById('balanceLabel');
+  const bv = document.getElementById('balanceValue');
+  const sb = document.getElementById('summaryBalance');
+
+  if (maint && total > 0) {
+    const diff = total - maint;
+    const s = diff >= 0 ? '+' : '';
+    bv.textContent = s + diff.toLocaleString();
+    sb.textContent = s + diff.toLocaleString();
+    sb.className = 'summary-value ' + (diff > 0 ? 'positive' : 'negative');
+    bd.className = 'balance-display ' + (diff > 0 ? 'surplus' : 'deficit');
+    bl.textContent = diff > 0 ? '⚠️ カロリー超過' : '✅ カロリー不足（良好）';
+  } else {
+    bv.textContent = '—'; sb.textContent = '—';
+    sb.className = 'summary-value'; bd.className = 'balance-display neutral'; bl.textContent = '収支';
+  }
+}
+
+document.getElementById('weightInput').addEventListener('input', updateAll);
+document.addEventListener('input', e => { if (e.target.classList.contains('meal-kcal') || e.target.id === 'weightInput') updateAll(); });
+
+const mealIcons = ['🍱','🍜','🥗','🍎','🧃','🍵','🍺','🍙','🥤','🫖','🍞','🥩'];
+let mealCount = 4;
+
+function addMealRow(label='その他', kcal='', source='') {
+  mealCount++;
+  const icon = mealIcons[(mealCount - 5) % mealIcons.length];
+  const div = document.createElement('div');
+  div.className = 'meal-item';
+  div.innerHTML = `
+    <div class="meal-icon">${icon}</div>
+    <div style="flex:1">
+      <div class="meal-label">${label}</div>
+      ${source ? `<div class="meal-source">🤖 AI解析</div>` : ''}
+    </div>
+    <div class="field-input-wrap">
+      <input type="text" class="meal-input meal-kcal" value="${kcal}" placeholder="0">
+      <span class="unit">kcal</span>
+    </div>`;
+  document.getElementById('mealList').appendChild(div);
+  updateAll();
+}
+
+// ======== Image Analysis ========
+let currentImageBase64 = null, currentAiKcal = 0, currentAiLabel = '';
+
+document.getElementById('imageInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    currentImageBase64 = ev.target.result.split(',')[1];
+    document.getElementById('previewImg').src = ev.target.result;
+    document.getElementById('previewWrap').style.display = 'block';
+    document.getElementById('analyzeBtn').style.display = 'flex';
+    document.getElementById('aiResult').style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+});
+
+function clearImage() {
+  currentImageBase64 = null;
+  document.getElementById('previewWrap').style.display = 'none';
+  document.getElementById('analyzeBtn').style.display = 'none';
+  document.getElementById('aiResult').style.display = 'none';
+  document.getElementById('imageInput').value = '';
+}
+
+async function analyzeImage() {
+  if (!currentImageBase64) return;
+  const btn = document.getElementById('analyzeBtn');
+  const spinner = document.getElementById('spinner');
+  const btnText = document.getElementById('analyzeBtnText');
+  btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = '解析中…';
+
+  const prompt = `この画像は食品・飲料のパッケージまたは料理の写真です。
+以下のJSON形式のみで回答してください（前後の説明文・マークダウン不要）：
+{"item_name":"商品名または料理名","per_unit":"100mlあたり○kcalなど単位情報","quantity":"容量や量（例: 350ml, 200g）","total_kcal":合計カロリー整数値,"calculation":"計算式（例: 5kcal×3.5=17.5→18kcal）","confidence":"high/medium/low","note":"注意事項"}
+パッケージに栄養成分表示がある場合は必ずそれを優先してください。`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514', max_tokens: 1000,
+        messages: [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: currentImageBase64 }},
+          { type: 'text', text: prompt }
+        ]}]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content.map(c => c.text || '').join('');
+    const parsed = JSON.parse(raw.match(/\{[\s\S]*\}/)[0]);
+
+    currentAiKcal = Math.round(parsed.total_kcal || 0);
+    currentAiLabel = parsed.item_name || '食品';
+
+    document.getElementById('aiItemName').textContent = parsed.item_name || '不明';
+    document.getElementById('aiCalcDetail').textContent =
+      `${parsed.per_unit} ／ ${parsed.quantity}\n→ ${parsed.calculation}`;
+    document.getElementById('aiKcal').textContent = currentAiKcal + ' kcal';
+    const conf = parsed.confidence === 'high' ? '📦 パッケージ表示より読み取り（高精度）' :
+                 parsed.confidence === 'medium' ? '📊 推定値（±10〜15%の誤差あり）' : '⚠️ 推定値（誤差が大きい可能性あり）';
+    document.getElementById('aiNote').textContent = conf + (parsed.note ? '　' + parsed.note : '');
+    document.getElementById('aiResult').style.display = 'block';
+  } catch(err) {
+    showToast('⚠️ 解析に失敗しました');
+  } finally {
+    btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = '🔍 Claudeで解析する';
+  }
+}
+
+function addAiResult() {
+  if (!currentAiKcal) return;
+  addMealRow(currentAiLabel, currentAiKcal, 'ai');
+  showToast(`✅ ${currentAiLabel}（${currentAiKcal}kcal）を追加`);
+  clearImage();
+}
+
+// ======== Save ========
+function saveRecord() {
+  const weight = parseFloat(document.getElementById('weightInput').value.trim());
+  const maint = calcMaint(weight);
+  let total = 0;
+  document.querySelectorAll('.meal-kcal').forEach(i => { total += parseFloat(i.value.trim()) || 0; });
+
+  if (!weight) { showToast('⚠️ 体重を入力してください'); return; }
+  if (!total) { showToast('⚠️ カロリーを入力してください'); return; }
+
+  const record = {
+    date: document.getElementById('dateInput').value,
+    weight, maint: maint || '', intake: total,
+    balance: maint ? total - maint : '',
+    correctedIntake: null, correctionNote: ''
+  };
+
+  const history = getHistory();
+  const idx = history.findIndex(r => r.date === record.date);
+  if (idx >= 0) { record.correctedIntake = history[idx].correctedIntake; record.correctionNote = history[idx].correctionNote; history[idx] = record; }
+  else history.unshift(record);
+  saveHistory(history);
+  showToast('✅ 保存しました');
+}
+
+// ======== Fix Tab ========
+function renderFixTab() {
+  const history = getHistory();
+  const sel = document.getElementById('dateSelector');
+  sel.innerHTML = '';
+
+  // 直近5日のボタン
+  const candidates = history.slice(0, 5);
+  if (!candidates.length) {
+    document.getElementById('fixContent').innerHTML = '<div class="analysis-empty">修正できる記録がまだありません</div>';
+    return;
+  }
+  candidates.forEach((r, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'date-sel-btn' + (i === 0 ? ' active' : '');
+    const d = r.date.slice(5, 10).replace('/', '/');
+    btn.textContent = d;
+    btn.onclick = () => {
+      document.querySelectorAll('.date-sel-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderFixContent(r);
+    };
+    sel.appendChild(btn);
+  });
+  renderFixContent(candidates[0]);
+}
+
+function renderFixContent(record) {
+  const container = document.getElementById('fixContent');
+  const prevWeight = record.weight || 0;
+  const prevMaint = record.maint || 0;
+  const prevIntake = record.intake || 0;
+
+  container.innerHTML = `
+    <div class="fix-row">
+      <div class="fix-row-title">📅 ${record.date} の記録（推定値）</div>
+
+      <div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.9">
+        前日の体重：<strong>${prevWeight} kg</strong><br>
+        前日のメンテナンス：<strong>${prevMaint.toLocaleString()} kcal</strong><br>
+        記録した摂取カロリー（推定値）：<strong>${prevIntake.toLocaleString()} kcal</strong>
+      </div>
+
+      <div class="fix-row-title" style="margin-top:4px">⚖️ 今朝の体重を入力してください</div>
+      <div class="fix-input-wrap" style="margin-bottom:12px">
+        <div class="fix-input-label">今朝の体重：</div>
+        <input type="text" id="todayWeightInput" placeholder="${prevWeight}" inputmode="decimal"
+          oninput="calcBackward(${prevWeight}, ${prevMaint}, ${prevIntake})">
+        <span class="unit">kg</span>
+      </div>
+
+      <div id="backCalcResult" style="display:none">
+        <div style="background:var(--fix-light);border-radius:8px;padding:12px;margin-bottom:12px;font-size:12px;line-height:2;color:var(--fix)">
+          📊 <strong>逆算結果</strong><br>
+          体重変化：<span id="weightDiffDisplay"></span> kg<br>
+          カロリー換算：<span id="kcalDiffDisplay"></span> kcal<br>
+          ─────────────────<br>
+          <strong>実際の摂取カロリー：<span id="backCalcKcal" style="font-size:16px"></span> kcal</strong>
+        </div>
+
+        <div class="fix-compare">
+          <div class="fix-col">
+            <div class="fix-col-label">記録した推定値</div>
+            <div class="fix-col-value original">${prevIntake.toLocaleString()}</div>
+            <div style="font-size:11px;color:var(--muted)">kcal</div>
+          </div>
+          <div class="fix-col">
+            <div class="fix-col-label">逆算された実際値</div>
+            <div class="fix-col-value corrected" id="fixCorrectedDisplay">—</div>
+            <div style="font-size:11px;color:var(--muted)">kcal</div>
+          </div>
+        </div>
+
+        <div id="diffBadgeWrap" style="margin-top:8px"></div>
+
+        <div class="accuracy-bar-wrap" style="margin-top:10px">
+          <div class="accuracy-label"><span>推定精度</span><span id="fixAccuracyPct">—</span></div>
+          <div class="accuracy-bar">
+            <div class="accuracy-fill good" id="fixAccuracyFill" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fix-row" style="margin-top:12px;border:none;padding:0">
+        <div class="fix-row-title">📝 修正メモ（任意）</div>
+        <input type="text" id="fixNote" placeholder="例：夕食を多めに食べた" value="${record.correctionNote || ''}"
+          style="width:100%;text-align:left;font-size:13px;padding:10px;border:1px solid var(--border);border-radius:8px;outline:none">
+      </div>
+    </div>
+    <button class="fix-save-btn" id="fixSaveBtn" onclick="saveFixRecord('${record.date}', ${prevIntake})" style="display:none">
+      💾 実際の摂取カロリーで上書き保存
+    </button>
+  `;
+}
+
+function calcBackward(prevWeight, prevMaint, prevIntake) {
+  const todayWeight = parseFloat(document.getElementById('todayWeightInput').value.trim());
+  if (!todayWeight || todayWeight < 30) {
+    document.getElementById('backCalcResult').style.display = 'none';
+    document.getElementById('fixSaveBtn').style.display = 'none';
+    return;
+  }
+
+  const weightDiff = parseFloat((todayWeight - prevWeight).toFixed(2));
+  // KKさん個人係数：100g増 ≒ 45kcal超過（2年間の実測値より）
+  const kcalDiff = Math.round(weightDiff * 450);
+  const actualIntake = prevMaint + kcalDiff;
+
+  document.getElementById('weightDiffDisplay').textContent = (weightDiff >= 0 ? '+' : '') + weightDiff;
+  document.getElementById('kcalDiffDisplay').textContent = (kcalDiff >= 0 ? '+' : '') + kcalDiff.toLocaleString() + '（100g≒45kcal換算）';
+  document.getElementById('backCalcKcal').textContent = actualIntake.toLocaleString();
+  document.getElementById('fixCorrectedDisplay').textContent = actualIntake.toLocaleString();
+
+  const diff = actualIntake - prevIntake;
+  const pct = prevIntake > 0 ? Math.abs(Math.round((diff / prevIntake) * 100)) : 0;
+  const acc = Math.max(0, 100 - pct);
+
+  let badge = '';
+  if (diff > 0) badge = `<span class="diff-badge over">推定より +${diff.toLocaleString()} kcal 多かった</span>`;
+  else if (diff < 0) badge = `<span class="diff-badge under">推定より ${Math.abs(diff).toLocaleString()} kcal 少なかった</span>`;
+  else badge = `<span class="diff-badge exact">推定通り</span>`;
+  document.getElementById('diffBadgeWrap').innerHTML = badge;
+
+  document.getElementById('fixAccuracyPct').textContent = acc + '%';
+  const fill = document.getElementById('fixAccuracyFill');
+  fill.style.width = acc + '%';
+  fill.className = 'accuracy-fill ' + (acc >= 90 ? 'good' : acc >= 75 ? 'warn' : 'bad');
+
+  document.getElementById('backCalcResult').style.display = 'block';
+  document.getElementById('fixSaveBtn').style.display = 'block';
+  document.getElementById('fixSaveBtn')._actualIntake = actualIntake;
+  document.getElementById('fixSaveBtn')._todayWeight = todayWeight;
+}
+
+function updateFixPreview(original) {}
+
+function saveFixRecord(dateStr, prevIntake) {
+  const btn = document.getElementById('fixSaveBtn');
+  const actualIntake = btn._actualIntake;
+  const todayWeight = btn._todayWeight;
+  const note = document.getElementById('fixNote').value;
+
+  if (!actualIntake) { showToast('⚠️ 今朝の体重を入力してください'); return; }
+
+  const history = getHistory();
+  const idx = history.findIndex(r => r.date === dateStr);
+  if (idx < 0) { showToast('記録が見つかりません'); return; }
+
+  // Overwrite yesterday's intake with back-calculated actual value
+  history[idx].intake = actualIntake;
+  history[idx].balance = history[idx].maint ? actualIntake - history[idx].maint : '';
+  history[idx].correctedIntake = actualIntake;
+  history[idx].correctionNote = note;
+  history[idx].correctionDiff = actualIntake - prevIntake;
+  history[idx].correctionPct = prevIntake > 0 ? Math.round(((actualIntake - prevIntake) / prevIntake) * 100) : 0;
+  history[idx].todayMorningWeight = todayWeight;
+  saveHistory(history);
+  showToast('✅ 昨日の摂取カロリーを実際の値で上書きしました');
+  renderFixTab();
+}
+
+// ======== Analysis Tab ========
+function renderAnalysis() {
+  const history = getHistory();
+  const container = document.getElementById('analysisContainer');
+  const valid = history.filter(r => r.weight && r.intake);
+
+  if (valid.length < 3) {
+    container.innerHTML = '<div class="analysis-empty">記録が3日以上になると<br>分析が表示されます</div>';
+    return;
+  }
+
+  const avgWeight = valid.reduce((s,r) => s + r.weight, 0) / valid.length;
+  const avgIntake = valid.reduce((s,r) => s + r.intake, 0) / valid.length;
+  const avgMaint = valid.filter(r=>r.maint).reduce((s,r) => s + r.maint, 0) / valid.filter(r=>r.maint).length;
+  const surplusDays = valid.filter(r => r.balance > 0).length;
+
+  // 修正データがある記録の精度
+  const corrected = history.filter(r => r.correctedIntake !== null && r.correctedIntake !== undefined);
+  const avgError = corrected.length > 0
+    ? Math.round(corrected.reduce((s,r) => s + Math.abs(r.correctionDiff || 0), 0) / corrected.length)
+    : null;
+  const avgPct = corrected.length > 0
+    ? Math.round(corrected.reduce((s,r) => s + (r.correctionPct || 0), 0) / corrected.length)
+    : null;
+
+  const recent7 = valid.slice(0, 7).reverse();
+  const maxAbs = Math.max(...recent7.map(r => Math.abs(r.balance || 0)), 1);
+
+  const bars = recent7.map(r => {
+    const h = Math.round((Math.abs(r.balance || 0) / maxAbs) * 72);
+    const cls = (r.balance || 0) > 0 ? 'surplus' : (r.balance || 0) < 0 ? 'deficit' : 'zero';
+    const dateLabel = r.date ? r.date.slice(5,10).replace('/','\/') : '';
+    return `<div class="chart-bar-wrap">
+      <div class="chart-bar ${cls}" style="height:${h}px"></div>
+      <div class="chart-date">${dateLabel}</div>
+    </div>`;
+  }).join('');
+
+  container.innerHTML = `
+    <div class="stat-grid">
+      <div class="stat-card">
+        <div class="stat-card-label">平均体重</div>
+        <div class="stat-card-value">${avgWeight.toFixed(1)}</div>
+        <div class="stat-card-unit">kg</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">平均摂取</div>
+        <div class="stat-card-value">${Math.round(avgIntake).toLocaleString()}</div>
+        <div class="stat-card-unit">kcal</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">平均メンテ</div>
+        <div class="stat-card-value">${Math.round(avgMaint).toLocaleString()}</div>
+        <div class="stat-card-unit">kcal</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-card-label">超過日数</div>
+        <div class="stat-card-value">${surplusDays}</div>
+        <div class="stat-card-unit">/ ${valid.length}日</div>
+      </div>
+    </div>
+
+    ${corrected.length > 0 ? `
+    <div class="accuracy-summary">
+      <div class="acc-title">📐 推定精度レポート（修正済み ${corrected.length}件）</div>
+      <div class="acc-row">
+        <span>平均推定誤差</span>
+        <strong>${avgError !== null ? avgError.toLocaleString() + ' kcal' : '—'}</strong>
+      </div>
+      <div class="acc-row">
+        <span>平均誤差率</span>
+        <strong>${avgPct !== null ? (avgPct > 0 ? '+' : '') + avgPct + '%' : '—'}</strong>
+      </div>
+      <div class="acc-row">
+        <span>傾向</span>
+        <strong>${avgPct > 5 ? '⚠️ 過少見積もりが多い' : avgPct < -5 ? '⚠️ 過大見積もりが多い' : '✅ 概ね正確'}</strong>
+      </div>
+    </div>` : `
+    <div class="accuracy-summary">
+      <div class="acc-title">📐 推定精度レポート</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.7">
+        「前日修正」タブで記録を修正すると<br>ここに推定精度が表示されます。<br>
+        誤差パターンを把握してGemの推定精度向上に役立てましょう。
+      </div>
+    </div>`}
+
+    <div class="weight-chart">
+      <div class="chart-title">直近7日のカロリー収支</div>
+      <div style="display:flex;gap:12px;font-size:10px;color:var(--muted);margin-bottom:8px">
+        <span>🟥 超過</span><span>🟩 不足（良好）</span>
+      </div>
+      <div class="chart-bars">${bars}</div>
+    </div>
+  `;
+}
+
+// ======== History Tab ========
+function renderHistory() {
+  const history = getHistory();
+  const list = document.getElementById('historyList');
+  if (!history.length) {
+    list.innerHTML = '<p style="color:var(--muted);font-size:13px;text-align:center;padding:16px">記録がありません</p>';
+    return;
+  }
+  list.innerHTML = history.slice(0, 30).map(r => {
+    const diff = r.balance;
+    const diffStr = diff !== '' && diff !== undefined ? (diff >= 0 ? '+' + Number(diff).toLocaleString() : Number(diff).toLocaleString()) : '—';
+    const cls = diff !== '' && diff !== undefined ? (diff > 0 ? 'pos' : 'neg') : '';
+    const fixBadge = r.correctedIntake ? `<span style="font-size:9px;background:var(--fix-light);color:var(--fix);padding:1px 5px;border-radius:3px;margin-left:3px">修正済</span>` : '';
+    return `<div class="history-row">
+      <span class="history-date">${r.date ? r.date.slice(5,10) : ''}</span>
+      <span class="history-weight">${r.weight}kg</span>
+      <span style="font-size:12px">${r.intake ? Number(r.intake).toLocaleString() : '—'}kcal${fixBadge}</span>
+      <span class="history-balance ${cls}">${diffStr}</span>
+    </div>`;
+  }).join('');
+}
+
+// ======== Export CSV ========
+function exportCSV() {
+  const history = getHistory();
+  if (!history.length) { showToast('記録がありません'); return; }
+  const header = '日付,体重(kg),メンテカロリー(kcal),摂取カロリー(kcal),収支(kcal),修正後カロリー(kcal),推定誤差(kcal),誤差率(%),修正メモ';
+  const rows = history.map(r =>
+    `"${r.date}",${r.weight},${r.maint},${r.intake},${r.balance !== '' ? r.balance : ''},${r.correctedIntake !== null && r.correctedIntake !== undefined ? r.correctedIntake : ''},${r.correctionDiff !== undefined ? r.correctionDiff : ''},${r.correctionPct !== undefined ? r.correctionPct : ''},"${r.correctionNote || ''}"`
+  );
+  const csv = '\uFEFF' + header + '\n' + rows.join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8;' }));
+  a.download = 'calorie_log.csv'; a.click();
+  showToast('📥 CSVをダウンロードしました');
+}
+
+// ======== Toast ========
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ======== Load today ========
+const existingToday = getHistory().find(r => r.date && r.date.startsWith(
+  today.getFullYear() + '/' + String(today.getMonth()+1).padStart(2,'0') + '/' + String(today.getDate()).padStart(2,'0')
+));
+if (existingToday) {
+  document.getElementById('weightInput').value = existingToday.weight;
+  updateAll();
+}
+</script>
+</body>
+</html>
