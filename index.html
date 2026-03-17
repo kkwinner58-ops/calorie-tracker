@@ -132,6 +132,15 @@
     font-size: 10px; color: var(--ai); background: var(--ai-light);
     padding: 2px 6px; border-radius: 4px; margin-top: 2px; display: inline-block;
   }
+  .meal-flag-wrap { display: flex; gap: 4px; margin-top: 4px; }
+  .flag-btn {
+    font-size: 10px; padding: 2px 7px; border-radius: 20px;
+    border: 1px solid var(--border); background: white;
+    color: var(--muted); cursor: pointer; font-family: 'Noto Sans JP', sans-serif;
+    transition: all 0.15s;
+  }
+  .flag-btn.confirmed.active { background: var(--green-bg); color: var(--green); border-color: var(--green); }
+  .flag-btn.estimated.active { background: #FFF8E1; color: #F57F17; border-color: #F57F17; }
   .meal-input { width: 90px !important; }
 
   .meal-total-row {
@@ -487,6 +496,60 @@
         <span class="unit">kcal</span>
       </div>
     </div>
+  </div>
+
+  <!-- カロリー電卓 -->
+  <div style="background:linear-gradient(135deg,#E8F4EE,#F0FAF4);border:1.5px solid var(--green);border-radius:14px;padding:18px;margin-bottom:14px">
+    <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;color:var(--green);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:6px">
+      🧮 カロリー電卓
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px">パッケージの数値から合計カロリーを計算します</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">単位カロリー</div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input type="text" id="calcUnit" placeholder="5" inputmode="decimal"
+            style="width:70px;font-size:16px;padding:6px 8px;border-radius:8px;border:none;background:white;text-align:right"
+            oninput="calcCalories()">
+          <span style="font-size:11px;color:var(--muted)">kcal</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">基準量</div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <select id="calcBase" style="font-size:13px;padding:6px 4px;border-radius:8px;border:1px solid var(--border);background:white" onchange="calcCalories()">
+            <option value="100">100ml</option>
+            <option value="100">100g</option>
+            <option value="1">1個</option>
+            <option value="1">1枚</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">実際の量</div>
+        <div style="display:flex;align-items:center;gap:4px">
+          <input type="text" id="calcAmount" placeholder="250" inputmode="decimal"
+            style="width:70px;font-size:16px;padding:6px 8px;border-radius:8px;border:none;background:white;text-align:right"
+            oninput="calcCalories()">
+          <span style="font-size:11px;color:var(--muted)" id="calcAmountUnit">ml/g</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">計算結果</div>
+        <div style="font-family:'DM Mono',monospace;font-size:24px;font-weight:700;color:var(--accent)" id="calcResult">—</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
+      <input type="text" id="calcLabel" placeholder="食品名（例：野菜ジュース）"
+        style="flex:1;font-size:13px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:white">
+    </div>
+    <button onclick="addCalcResult()"
+      style="width:100%;padding:12px;background:var(--green);border:none;border-radius:10px;
+      font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer">
+      ➕ 食事ログに追加（確定値）
+    </button>
   </div>
 
   <!-- AI Upload -->
