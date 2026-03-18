@@ -558,33 +558,57 @@
     <div id="mealList">
       <div class="meal-item">
         <div class="meal-icon">🌅</div>
-        <div style="flex:1"><div class="meal-label">朝食</div></div>
+        <div style="flex:1">
+          <div class="meal-label">朝食</div>
+          <div class="meal-flag-wrap">
+            <button class="flag-btn confirmed active" onclick="toggleFlag(this)">✅ 確定</button>
+            <button class="flag-btn estimated" onclick="toggleFlag(this)">☆ 推定</button>
+          </div>
+        </div>
         <div class="field-input-wrap">
-          <input type="text" class="meal-input meal-kcal" placeholder="0">
+          <input type="text" class="meal-input meal-kcal" placeholder="0" inputmode="numeric">
           <span class="unit">kcal</span>
         </div>
       </div>
       <div class="meal-item">
         <div class="meal-icon">☀️</div>
-        <div style="flex:1"><div class="meal-label">昼食</div></div>
+        <div style="flex:1">
+          <div class="meal-label">昼食</div>
+          <div class="meal-flag-wrap">
+            <button class="flag-btn confirmed" onclick="toggleFlag(this)">✅ 確定</button>
+            <button class="flag-btn estimated active" onclick="toggleFlag(this)">☆ 推定</button>
+          </div>
+        </div>
         <div class="field-input-wrap">
-          <input type="text" class="meal-input meal-kcal" placeholder="0">
+          <input type="text" class="meal-input meal-kcal" placeholder="0" inputmode="numeric">
           <span class="unit">kcal</span>
         </div>
       </div>
       <div class="meal-item">
         <div class="meal-icon">🌙</div>
-        <div style="flex:1"><div class="meal-label">夕食</div></div>
+        <div style="flex:1">
+          <div class="meal-label">夕食</div>
+          <div class="meal-flag-wrap">
+            <button class="flag-btn confirmed" onclick="toggleFlag(this)">✅ 確定</button>
+            <button class="flag-btn estimated active" onclick="toggleFlag(this)">☆ 推定</button>
+          </div>
+        </div>
         <div class="field-input-wrap">
-          <input type="text" class="meal-input meal-kcal" placeholder="0">
+          <input type="text" class="meal-input meal-kcal" placeholder="0" inputmode="numeric">
           <span class="unit">kcal</span>
         </div>
       </div>
       <div class="meal-item">
         <div class="meal-icon">☕</div>
-        <div style="flex:1"><div class="meal-label">間食・飲み物</div></div>
+        <div style="flex:1">
+          <div class="meal-label">間食・飲み物</div>
+          <div class="meal-flag-wrap">
+            <button class="flag-btn confirmed active" onclick="toggleFlag(this)">✅ 確定</button>
+            <button class="flag-btn estimated" onclick="toggleFlag(this)">☆ 推定</button>
+          </div>
+        </div>
         <div class="field-input-wrap">
-          <input type="text" class="meal-input meal-kcal" placeholder="0">
+          <input type="text" class="meal-input meal-kcal" placeholder="0" inputmode="numeric">
           <span class="unit">kcal</span>
         </div>
       </div>
@@ -755,7 +779,24 @@ function saveRecord() {
   const weight = parseFloat(document.getElementById('weightInput').value.trim());
   const maint = calcMaint(weight);
   let total = 0;
-  document.querySelectorAll('.meal-kcal').forEach(i => { total += parseFloat(i.value.trim()) || 0; });
+
+  // Save meal-level data with confirmed/estimated flags
+  const meals = [];
+  document.querySelectorAll('#mealList .meal-item').forEach(item => {
+    const kcalInput = item.querySelector('.meal-kcal');
+    const labelEl = item.querySelector('.meal-label');
+    const confirmedBtn = item.querySelector('.flag-btn.confirmed');
+    const kcal = parseFloat(kcalInput ? kcalInput.value.trim() : 0) || 0;
+    if (kcal > 0) {
+      const isConfirmed = confirmedBtn && confirmedBtn.classList.contains('active');
+      meals.push({
+        name: labelEl ? labelEl.textContent : 'その他',
+        kcal: kcal,
+        confirmed: isConfirmed
+      });
+      total += kcal;
+    }
+  });
 
   if (!weight) { showToast('⚠️ 体重を入力してください'); return; }
   if (!total) { showToast('⚠️ カロリーを入力してください'); return; }
@@ -764,13 +805,17 @@ function saveRecord() {
     date: document.getElementById('dateInput').value,
     weight, maint: maint || '', intake: total,
     balance: maint ? total - maint : '',
+    meals: meals,
     correctedIntake: null, correctionNote: ''
   };
 
   const history = getHistory();
   const idx = history.findIndex(r => r.date === record.date);
-  if (idx >= 0) { record.correctedIntake = history[idx].correctedIntake; record.correctionNote = history[idx].correctionNote; history[idx] = record; }
-  else history.unshift(record);
+  if (idx >= 0) {
+    record.correctedIntake = history[idx].correctedIntake;
+    record.correctionNote = history[idx].correctionNote;
+    history[idx] = record;
+  } else history.unshift(record);
   saveHistory(history);
   showToast('✅ 保存しました');
 }
@@ -807,18 +852,52 @@ function renderFixContent(record) {
   const prevWeight = record.weight || 0;
   const prevMaint = record.maint || 0;
   const prevIntake = record.intake || 0;
+  const meals = record.meals || [];
+  const estimatedMeals = meals.filter(m => !m.confirmed);
+
+  // Build estimated meals list HTML
+  const estimatedMealsHTML = estimatedMeals.length > 0 ? `
+    <div style="background:#FFF8E1;border-radius:8px;padding:12px;margin-bottom:12px">
+      <div style="font-size:12px;font-weight:700;color:#F57F17;margin-bottom:8px">
+        ☆ 推定値の食事（修正対象）
+      </div>
+      ${estimatedMeals.map((m, i) => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:6px 0;border-bottom:1px solid rgba(245,127,23,0.15)">
+          <span style="font-size:13px;color:var(--text)">${m.name}</span>
+          <div style="display:flex;align-items:center;gap:4px">
+            <input type="text" class="fix-meal-input" data-idx="${i}"
+              value="${m.kcal}" inputmode="numeric"
+              style="width:70px;font-size:15px;font-family:DM Mono,monospace;font-weight:700;
+              padding:4px 8px;border-radius:6px;border:1.5px solid #F57F17;text-align:right;background:white"
+              oninput="updateEstimatedTotal()">
+            <span style="font-size:11px;color:var(--muted)">kcal</span>
+          </div>
+        </div>
+      `).join('')}
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px">
+        <span style="font-size:12px;color:var(--muted)">推定合計</span>
+        <span style="font-family:DM Mono,monospace;font-weight:700;font-size:16px;color:#F57F17" id="estimatedSubtotal">
+          ${estimatedMeals.reduce((s,m) => s+m.kcal, 0).toLocaleString()} kcal
+        </span>
+      </div>
+    </div>` : `
+    <div style="background:var(--green-bg);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--green)">
+      ✅ 全ての食事が確定値です。修正不要です。
+    </div>`;
 
   container.innerHTML = `
     <div class="fix-row">
-      <div class="fix-row-title">📅 ${record.date} の記録（推定値）</div>
+      <div class="fix-row-title">📅 ${record.date} の記録</div>
 
       <div style="background:var(--bg);border-radius:8px;padding:12px;margin-bottom:12px;font-size:13px;line-height:1.9">
         前日の体重：<strong>${prevWeight} kg</strong><br>
         前日のメンテナンス：<strong>${prevMaint.toLocaleString()} kcal</strong><br>
-        記録した摂取カロリー（推定値）：<strong>${prevIntake.toLocaleString()} kcal</strong>
+        記録した合計カロリー：<strong>${prevIntake.toLocaleString()} kcal</strong>
       </div>
 
-      <div class="fix-row-title" style="margin-top:4px">⚖️ 今朝の体重を入力してください</div>
+      ${estimatedMealsHTML}
+
+      <div class="fix-row-title" style="margin-top:4px">⚖️ 今朝の体重を入力</div>
       <div class="fix-input-wrap" style="margin-bottom:12px">
         <div class="fix-input-label">今朝の体重：</div>
         <input type="text" id="todayWeightInput" placeholder="${prevWeight}" inputmode="decimal"
@@ -828,7 +907,7 @@ function renderFixContent(record) {
 
       <div id="backCalcResult" style="display:none">
         <div style="background:var(--fix-light);border-radius:8px;padding:12px;margin-bottom:12px;font-size:12px;line-height:2;color:var(--fix)">
-          📊 <strong>逆算結果</strong><br>
+          📊 <strong>逆算結果（個人係数：100g≒45kcal）</strong><br>
           体重変化：<span id="weightDiffDisplay"></span> kg<br>
           カロリー換算：<span id="kcalDiffDisplay"></span> kcal<br>
           ─────────────────<br>
@@ -837,7 +916,7 @@ function renderFixContent(record) {
 
         <div class="fix-compare">
           <div class="fix-col">
-            <div class="fix-col-label">記録した推定値</div>
+            <div class="fix-col-label">記録した合計</div>
             <div class="fix-col-value original">${prevIntake.toLocaleString()}</div>
             <div style="font-size:11px;color:var(--muted)">kcal</div>
           </div>
@@ -858,16 +937,25 @@ function renderFixContent(record) {
         </div>
       </div>
 
-      <div class="fix-row" style="margin-top:12px;border:none;padding:0">
+      <div style="margin-top:12px">
         <div class="fix-row-title">📝 修正メモ（任意）</div>
         <input type="text" id="fixNote" placeholder="例：夕食を多めに食べた" value="${record.correctionNote || ''}"
           style="width:100%;text-align:left;font-size:13px;padding:10px;border:1px solid var(--border);border-radius:8px;outline:none">
       </div>
     </div>
     <button class="fix-save-btn" id="fixSaveBtn" onclick="saveFixRecord('${record.date}', ${prevIntake})" style="display:none">
-      💾 実際の摂取カロリーで上書き保存
+      💾 修正内容を上書き保存
     </button>
   `;
+}
+
+function updateEstimatedTotal() {
+  let total = 0;
+  document.querySelectorAll('.fix-meal-input').forEach(inp => {
+    total += parseFloat(inp.value) || 0;
+  });
+  const el = document.getElementById('estimatedSubtotal');
+  if (el) el.textContent = total.toLocaleString() + ' kcal';
 }
 
 function calcBackward(prevWeight, prevMaint, prevIntake) {
@@ -923,7 +1011,18 @@ function saveFixRecord(dateStr, prevIntake) {
   const idx = history.findIndex(r => r.date === dateStr);
   if (idx < 0) { showToast('記録が見つかりません'); return; }
 
-  // Overwrite yesterday's intake with back-calculated actual value
+  // Save corrected meal values
+  const mealInputs = document.querySelectorAll('.fix-meal-input');
+  if (mealInputs.length > 0 && history[idx].meals) {
+    const estimatedMeals = history[idx].meals.filter(m => !m.confirmed);
+    mealInputs.forEach((inp, i) => {
+      if (estimatedMeals[i]) {
+        estimatedMeals[i].kcal = parseFloat(inp.value) || estimatedMeals[i].kcal;
+        estimatedMeals[i].corrected = true;
+      }
+    });
+  }
+
   history[idx].intake = actualIntake;
   history[idx].balance = history[idx].maint ? actualIntake - history[idx].maint : '';
   history[idx].correctedIntake = actualIntake;
@@ -932,7 +1031,7 @@ function saveFixRecord(dateStr, prevIntake) {
   history[idx].correctionPct = prevIntake > 0 ? Math.round(((actualIntake - prevIntake) / prevIntake) * 100) : 0;
   history[idx].todayMorningWeight = todayWeight;
   saveHistory(history);
-  showToast('✅ 昨日の摂取カロリーを実際の値で上書きしました');
+  showToast('✅ 修正を保存しました');
   renderFixTab();
 }
 
