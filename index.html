@@ -504,42 +504,42 @@
       🧮 カロリー電卓
     </div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:12px">パッケージの数値から合計カロリーを計算します</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.7">
+      パッケージの表示をそのまま入力してください<br>
+      例）88kcal ÷ 180ml × 180ml = 88kcal
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
       <div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">単位カロリー</div>
-        <div style="display:flex;align-items:center;gap:4px">
-          <input type="text" id="calcUnit" placeholder="5" inputmode="decimal"
-            style="width:70px;font-size:16px;padding:6px 8px;border-radius:8px;border:none;background:white;text-align:right"
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">カロリー</div>
+        <div style="display:flex;align-items:center;gap:2px">
+          <input type="text" id="calcUnit" placeholder="88" inputmode="decimal"
+            style="width:60px;font-size:16px;padding:6px 8px;border-radius:8px;border:none;background:white;text-align:right"
             oninput="calcCalories()">
-          <span style="font-size:11px;color:var(--muted)">kcal</span>
+          <span style="font-size:10px;color:var(--muted)">kcal</span>
         </div>
       </div>
       <div>
         <div style="font-size:11px;color:var(--muted);margin-bottom:4px">基準量</div>
-        <div style="display:flex;align-items:center;gap:4px">
-          <select id="calcBase" style="font-size:13px;padding:6px 4px;border-radius:8px;border:1px solid var(--border);background:white" onchange="calcCalories()">
-            <option value="100">100ml当たり</option>
-            <option value="100">100g当たり</option>
-            <option value="1">1個当たり</option>
-            <option value="1">1枚当たり</option>
-          </select>
+        <div style="display:flex;align-items:center;gap:2px">
+          <input type="text" id="calcBase" placeholder="180" inputmode="decimal"
+            style="width:60px;font-size:16px;padding:6px 8px;border-radius:8px;border:none;background:white;text-align:right"
+            oninput="calcCalories()">
+          <span style="font-size:10px;color:var(--muted)">ml/g/個</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">実際の量</div>
+        <div style="display:flex;align-items:center;gap:2px">
+          <input type="text" id="calcAmount" placeholder="180" inputmode="decimal"
+            style="width:60px;font-size:16px;padding:6px 8px;border-radius:8px;border:none;background:white;text-align:right"
+            oninput="calcCalories()">
+          <span style="font-size:10px;color:var(--muted)">ml/g/個</span>
         </div>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px">
-      <div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">実際の量</div>
-        <div style="display:flex;align-items:center;gap:4px">
-          <input type="text" id="calcAmount" placeholder="250" inputmode="decimal"
-            style="width:70px;font-size:16px;padding:6px 8px;border-radius:8px;border:none;background:white;text-align:right"
-            oninput="calcCalories()">
-          <span style="font-size:11px;color:var(--muted)" id="calcAmountUnit">ml/g</span>
-        </div>
-      </div>
-      <div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">計算結果</div>
-        <div style="font-family:'DM Mono',monospace;font-size:24px;font-weight:700;color:var(--accent)" id="calcResult">—</div>
-      </div>
+    <div style="text-align:center;margin-bottom:12px">
+      <div style="font-size:11px;color:var(--muted);margin-bottom:4px">計算結果</div>
+      <div style="font-family:'DM Mono',monospace;font-size:28px;font-weight:700;color:var(--accent)" id="calcResult">—</div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
       <input type="text" id="calcLabel" placeholder="食品名（例：野菜ジュース）"
@@ -550,35 +550,6 @@
       font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer">
       ➕ 食事ログに追加（確定値）
     </button>
-  </div>
-
-  <!-- AI Upload -->
-  <div class="ai-upload-card">
-    <div class="ai-card-title">🤖 AI カロリー読み取り</div>
-    <div class="upload-zone">
-      <input type="file" id="imageInput" accept="image/*">
-      <div class="upload-icon">📸</div>
-      <div class="upload-text">写真をタップして選択</div>
-      <div class="upload-sub">缶・パッケージ・料理の写真をアップロード</div>
-    </div>
-    <div class="preview-wrap" id="previewWrap">
-      <img id="previewImg" src="" alt="preview">
-      <button class="clear-preview" onclick="clearImage()">✕</button>
-    </div>
-    <button class="analyze-btn" id="analyzeBtn" onclick="analyzeImage()">
-      <div class="spinner" id="spinner"></div>
-      <span id="analyzeBtnText">🔍 Claudeで解析する</span>
-    </button>
-    <div class="ai-result" id="aiResult">
-      <div class="ai-result-header">✅ 解析結果</div>
-      <div class="ai-result-body">
-        <div class="ai-item-name" id="aiItemName"></div>
-        <div class="ai-calc-detail" id="aiCalcDetail"></div>
-        <div class="ai-kcal-big" id="aiKcal"></div>
-        <div class="ai-note" id="aiNote"></div>
-        <button class="add-to-log-btn" onclick="addAiResult()">➕ 食事ログに追加</button>
-      </div>
-    </div>
   </div>
 
   <!-- Meal Log -->
@@ -777,84 +748,6 @@ function addMealRow(label='その他', kcal='', source='') {
     </div>`;
   document.getElementById('mealList').appendChild(div);
   updateAll();
-}
-
-// ======== Image Analysis ========
-let currentImageBase64 = null, currentAiKcal = 0, currentAiLabel = '';
-
-document.getElementById('imageInput').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    currentImageBase64 = ev.target.result.split(',')[1];
-    document.getElementById('previewImg').src = ev.target.result;
-    document.getElementById('previewWrap').style.display = 'block';
-    document.getElementById('analyzeBtn').style.display = 'flex';
-    document.getElementById('aiResult').style.display = 'none';
-  };
-  reader.readAsDataURL(file);
-});
-
-function clearImage() {
-  currentImageBase64 = null;
-  document.getElementById('previewWrap').style.display = 'none';
-  document.getElementById('analyzeBtn').style.display = 'none';
-  document.getElementById('aiResult').style.display = 'none';
-  document.getElementById('imageInput').value = '';
-}
-
-async function analyzeImage() {
-  if (!currentImageBase64) return;
-  const btn = document.getElementById('analyzeBtn');
-  const spinner = document.getElementById('spinner');
-  const btnText = document.getElementById('analyzeBtnText');
-  btn.disabled = true; spinner.style.display = 'block'; btnText.textContent = '解析中…';
-
-  const prompt = `この画像は食品・飲料のパッケージまたは料理の写真です。
-以下のJSON形式のみで回答してください（前後の説明文・マークダウン不要）：
-{"item_name":"商品名または料理名","per_unit":"100mlあたり○kcalなど単位情報","quantity":"容量や量（例: 350ml, 200g）","total_kcal":合計カロリー整数値,"calculation":"計算式（例: 5kcal×3.5=17.5→18kcal）","confidence":"high/medium/low","note":"注意事項"}
-パッケージに栄養成分表示がある場合は必ずそれを優先してください。`;
-
-  try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514', max_tokens: 1000,
-        messages: [{ role: 'user', content: [
-          { type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: currentImageBase64 }},
-          { type: 'text', text: prompt }
-        ]}]
-      })
-    });
-    const data = await res.json();
-    const raw = data.content.map(c => c.text || '').join('');
-    const parsed = JSON.parse(raw.match(/\{[\s\S]*\}/)[0]);
-
-    currentAiKcal = Math.round(parsed.total_kcal || 0);
-    currentAiLabel = parsed.item_name || '食品';
-
-    document.getElementById('aiItemName').textContent = parsed.item_name || '不明';
-    document.getElementById('aiCalcDetail').textContent =
-      `${parsed.per_unit} ／ ${parsed.quantity}\n→ ${parsed.calculation}`;
-    document.getElementById('aiKcal').textContent = currentAiKcal + ' kcal';
-    const conf = parsed.confidence === 'high' ? '📦 パッケージ表示より読み取り（高精度）' :
-                 parsed.confidence === 'medium' ? '📊 推定値（±10〜15%の誤差あり）' : '⚠️ 推定値（誤差が大きい可能性あり）';
-    document.getElementById('aiNote').textContent = conf + (parsed.note ? '　' + parsed.note : '');
-    document.getElementById('aiResult').style.display = 'block';
-  } catch(err) {
-    showToast('⚠️ 解析に失敗しました');
-  } finally {
-    btn.disabled = false; spinner.style.display = 'none'; btnText.textContent = '🔍 Claudeで解析する';
-  }
-}
-
-function addAiResult() {
-  if (!currentAiKcal) return;
-  addMealRow(currentAiLabel, currentAiKcal, 'ai');
-  showToast(`✅ ${currentAiLabel}（${currentAiKcal}kcal）を追加`);
-  clearImage();
 }
 
 // ======== Save ========
