@@ -775,30 +775,6 @@
 </div>
 </div>
 
-<!-- Sticky Totals Footer -->
-<div class="sticky-totals">
-  <div class="sticky-totals-inner">
-    <div class="sticky-col">
-      <div class="sticky-label">🔥 合計カロリー / 目標</div>
-      <div style="display:flex;align-items:baseline;gap:4px">
-        <span class="sticky-value" id="stickyTotalKcal">0</span>
-        <span style="font-size:10px;color:rgba(255,255,255,0.5)">kcal</span>
-        <span style="font-size:11px;color:rgba(255,255,255,0.4)" id="stickyMaintLabel"></span>
-      </div>
-      <div class="sticky-remaining kcal" id="stickyKcalRemaining"></div>
-    </div>
-    <div class="sticky-col">
-      <div class="sticky-label">💪 合計タンパク質 / 目標</div>
-      <div style="display:flex;align-items:baseline;gap:4px">
-        <span class="sticky-value" id="stickyTotalProtein">0</span>
-        <span style="font-size:10px;color:rgba(255,255,255,0.5)">g</span>
-        <span style="font-size:11px;color:rgba(255,255,255,0.4)" id="stickyProteinGoalLabel"></span>
-      </div>
-      <div class="sticky-remaining protein" id="stickyProteinRemaining"></div>
-    </div>
-  </div>
-</div>
-
 <!-- ==================== TAB: 前日修正 ==================== -->
 <div class="tab-content" id="tab-fix">
 <div class="container">
@@ -836,6 +812,30 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- Sticky Totals Footer - always visible -->
+<div class="sticky-totals">
+  <div class="sticky-totals-inner">
+    <div class="sticky-col">
+      <div class="sticky-label">🔥 合計カロリー / 目標</div>
+      <div style="display:flex;align-items:baseline;gap:4px">
+        <span class="sticky-value" id="stickyTotalKcal">0</span>
+        <span style="font-size:10px;color:rgba(255,255,255,0.5)">kcal</span>
+        <span style="font-size:11px;color:rgba(255,255,255,0.4)" id="stickyMaintLabel"></span>
+      </div>
+      <div class="sticky-remaining kcal" id="stickyKcalRemaining"></div>
+    </div>
+    <div class="sticky-col">
+      <div class="sticky-label">💪 合計タンパク質 / 目標</div>
+      <div style="display:flex;align-items:baseline;gap:4px">
+        <span class="sticky-value" id="stickyTotalProtein">0</span>
+        <span style="font-size:10px;color:rgba(255,255,255,0.5)">g</span>
+        <span style="font-size:11px;color:rgba(255,255,255,0.4)" id="stickyProteinGoalLabel"></span>
+      </div>
+      <div class="sticky-remaining protein" id="stickyProteinRemaining"></div>
+    </div>
+  </div>
+</div>
 
 <script>
 // ======== Constants ========
@@ -1654,36 +1654,95 @@ const existingToday = getHistory().find(r => r.date && r.date.startsWith(
   today.getFullYear() + '/' + String(today.getMonth()+1).padStart(2,'0') + '/' + String(today.getDate()).padStart(2,'0')
 ));
 if (existingToday) {
-  document.getElementById('weightInput').value = existingToday.weight;
-  // Restore meal data
+  document.getElementById('weightInput').value = existingToday.weight || '';
+
+  // Restore meal data into UI
   if (existingToday.meals && existingToday.meals.length > 0) {
     const mealItems = document.querySelectorAll('#mealList .meal-item');
-    const defaultMeals = ['朝食','昼食','夕食','間食・飲み物'];
     existingToday.meals.forEach((m, i) => {
+      let targetItem;
       if (i < mealItems.length) {
-        const kcalInput = mealItems[i].querySelector('.meal-kcal');
-        const proteinInput = mealItems[i].querySelector('.meal-protein');
-        const confirmedBtn = mealItems[i].querySelector('.flag-btn.confirmed');
-        const estimatedBtn = mealItems[i].querySelector('.flag-btn.estimated');
+        targetItem = mealItems[i];
+      } else {
+        // Add new row
+        mealCount++;
+        const icon = mealIcons[(mealCount - 5) % mealIcons.length];
+        const div = document.createElement('div');
+        div.className = 'meal-item';
+        div.style.flexWrap = 'wrap';
+        const isConf = m.confirmed;
+        div.innerHTML = `
+          <div class="meal-icon">${icon}</div>
+          <div style="flex:1;min-width:80px">
+            <div class="meal-label">${m.name || 'その他'}</div>
+            <div class="meal-flag-wrap">
+              <button class="flag-btn confirmed ${isConf ? 'active' : ''}" onclick="toggleFlag(this)">✅ 確定</button>
+              <button class="flag-btn estimated ${!isConf ? 'active' : ''}" onclick="toggleFlag(this)">☆ 推定</button>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <div class="field-input-wrap">
+              <input type="text" class="meal-input meal-kcal" value="${m.kcal || ''}" placeholder="0" inputmode="numeric">
+              <span class="unit">kcal</span>
+            </div>
+            <div class="field-input-wrap">
+              <input type="text" class="meal-input meal-protein" value="${m.protein || ''}" placeholder="0" inputmode="decimal" style="width:60px;background:#EDE9FB">
+              <span class="unit" style="color:#5B4FCF">g P</span>
+            </div>
+          </div>`;
+        document.getElementById('mealList').appendChild(div);
+        targetItem = div;
+      }
+
+      if (targetItem) {
+        const kcalInput = targetItem.querySelector('.meal-kcal');
+        const proteinInput = targetItem.querySelector('.meal-protein');
+        const confirmedBtn = targetItem.querySelector('.flag-btn.confirmed');
+        const estimatedBtn = targetItem.querySelector('.flag-btn.estimated');
         if (kcalInput) kcalInput.value = m.kcal || '';
         if (proteinInput) proteinInput.value = m.protein || '';
-        if (m.confirmed) {
-          if (confirmedBtn) { confirmedBtn.classList.add('active'); }
-          if (estimatedBtn) { estimatedBtn.classList.remove('active'); }
-        } else {
-          if (confirmedBtn) { confirmedBtn.classList.remove('active'); }
-          if (estimatedBtn) { estimatedBtn.classList.add('active'); }
+        if (confirmedBtn && estimatedBtn) {
+          if (m.confirmed) {
+            confirmedBtn.classList.add('active');
+            estimatedBtn.classList.remove('active');
+          } else {
+            confirmedBtn.classList.remove('active');
+            estimatedBtn.classList.add('active');
+          }
         }
-      } else {
-        // Add extra rows
-        addMealRow(m.name || 'その他', m.kcal || '', m.confirmed ? 'calc' : '');
-        const newItems = document.querySelectorAll('#mealList .meal-item');
-        const newItem = newItems[newItems.length - 1];
-        const proteinInput = newItem ? newItem.querySelector('.meal-protein') : null;
-        if (proteinInput) proteinInput.value = m.protein || '';
       }
     });
   }
+
+  // Always update sticky footer with saved totals
+  const savedIntake = existingToday.intake || 0;
+  const savedProtein = existingToday.totalProtein || 0;
+  const savedMaint = existingToday.maint || 0;
+  const savedWeight = parseFloat(existingToday.weight) || 0;
+  const savedProteinGoal = existingToday.proteinGoal || (savedWeight ? Math.round(savedWeight * 1.1 * 10) / 10 : null);
+
+  const sKcal = document.getElementById('stickyTotalKcal');
+  const sProtein = document.getElementById('stickyTotalProtein');
+  const sKcalRem = document.getElementById('stickyKcalRemaining');
+  const sProteinRem = document.getElementById('stickyProteinRemaining');
+  const sMaintLabel = document.getElementById('stickyMaintLabel');
+  const sProteinGoalLabel = document.getElementById('stickyProteinGoalLabel');
+
+  if (sKcal) sKcal.textContent = savedIntake.toLocaleString();
+  if (sProtein) sProtein.textContent = savedProtein;
+  if (sMaintLabel) sMaintLabel.textContent = savedMaint ? '/ ' + savedMaint.toLocaleString() : '';
+  if (sProteinGoalLabel) sProteinGoalLabel.textContent = savedProteinGoal ? '/ ' + savedProteinGoal + 'g' : '';
+  if (sKcalRem && savedMaint) {
+    const rem = savedMaint - savedIntake;
+    if (rem <= 0) { sKcalRem.textContent = '✅ 目標達成！'; sKcalRem.className = 'sticky-remaining done'; }
+    else { sKcalRem.textContent = 'あと ' + rem.toLocaleString() + ' kcal'; sKcalRem.className = 'sticky-remaining kcal'; }
+  }
+  if (sProteinRem && savedProteinGoal) {
+    const rem = Math.round((savedProteinGoal - savedProtein) * 10) / 10;
+    if (rem <= 0) { sProteinRem.textContent = '✅ 目標達成！'; sProteinRem.className = 'sticky-remaining done'; }
+    else { sProteinRem.textContent = 'あと ' + rem + 'g'; sProteinRem.className = 'sticky-remaining protein'; }
+  }
+
   updateAll();
 }
 </script>
