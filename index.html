@@ -508,59 +508,104 @@
     </div>
   </div>
 
-  <!-- カロリー電卓 -->
-  <div style="background:linear-gradient(135deg,#E8F4EE,#F0FAF4);border:1.5px solid var(--green);border-radius:14px;padding:18px;margin-bottom:14px">
-    <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;color:var(--green);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:6px">
-      🧮 カロリー電卓
-    </div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:12px">パッケージの数値から合計カロリーを計算します</div>
-    <div style="font-size:11px;color:var(--muted);margin-bottom:10px;line-height:1.7">
-      パッケージの表示をそのまま入力してください<br>
-      例）88kcal ÷ 180ml × 180ml = 88kcal
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px">
-      <div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">カロリー</div>
-        <div style="display:flex;align-items:center;gap:2px">
-          <input type="text" id="calcUnit" placeholder="88" inputmode="decimal"
-            style="width:60px;font-size:16px;padding:6px 8px;border-radius:8px;border:none;background:white;text-align:right"
-            oninput="calcCalories()">
-          <span style="font-size:10px;color:var(--muted)">kcal</span>
+    <!-- カロリー電卓 -->
+    <div style="background:linear-gradient(135deg,#E8F4EE,#F0FAF4);border:1.5px solid var(--green);border-radius:14px;padding:18px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;color:var(--green);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+        🧮 カロリー＆タンパク質 電卓
+      </div>
+
+      <!-- 履歴プルダウン -->
+      <div style="margin-bottom:12px">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">📋 食品履歴から選択（2回目以降）</div>
+        <select id="calcHistory" onchange="loadFromHistory()"
+          style="width:100%;font-size:14px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:white;color:var(--text)">
+          <option value="">-- 食品を選択 --</option>
+        </select>
+      </div>
+
+      <!-- 食品名 -->
+      <div style="margin-bottom:10px">
+        <div style="font-size:10px;color:var(--muted);margin-bottom:4px">食品名</div>
+        <input type="text" id="calcLabel" placeholder="食品名（例：牛乳）"
+          style="width:100%;font-size:14px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:white">
+      </div>
+
+      <!-- カロリー行 -->
+      <div style="font-size:11px;font-weight:700;color:var(--accent);margin-bottom:6px">🔥 カロリー</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px">
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px">基準kcal</div>
+          <div style="display:flex;align-items:center;gap:2px">
+            <input type="text" id="calcUnit" placeholder="88" inputmode="decimal"
+              style="width:60px;font-size:16px;padding:6px 8px;border-radius:8px;border:none;background:white;text-align:right"
+              oninput="calcCalories()">
+            <span style="font-size:10px;color:var(--muted)">kcal</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px">基準量</div>
+          <div style="display:flex;align-items:center;gap:2px">
+            <input type="text" id="calcBase" placeholder="180" inputmode="decimal"
+              style="width:60px;font-size:16px;padding:6px 8px;border-radius:8px;border:none;background:white;text-align:right"
+              oninput="calcCalories()">
+            <span style="font-size:10px;color:var(--muted)">ml/g</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px">実際の量 ✏️</div>
+          <div style="display:flex;align-items:center;gap:2px">
+            <input type="text" id="calcAmount" placeholder="115" inputmode="decimal"
+              style="width:60px;font-size:18px;font-weight:700;padding:6px 8px;border-radius:8px;border:2px solid var(--accent);background:#FFF8F5;text-align:right"
+              oninput="calcCalories()">
+            <span style="font-size:10px;color:var(--muted)">ml/g</span>
+          </div>
         </div>
       </div>
-      <div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">基準量</div>
-        <div style="display:flex;align-items:center;gap:2px">
-          <input type="text" id="calcBase" placeholder="180" inputmode="decimal"
-            style="width:60px;font-size:16px;padding:6px 8px;border-radius:8px;border:none;background:white;text-align:right"
-            oninput="calcCalories()">
-          <span style="font-size:10px;color:var(--muted)">ml/g/個</span>
+
+      <!-- タンパク質行 -->
+      <div style="font-size:11px;font-weight:700;color:#5B4FCF;margin-bottom:6px">💪 タンパク質</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px">
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px">基準タンパク質</div>
+          <div style="display:flex;align-items:center;gap:2px">
+            <input type="text" id="calcProteinUnit" placeholder="9.5" inputmode="decimal"
+              style="width:60px;font-size:16px;padding:6px 8px;border-radius:8px;border:none;background:#EDE9FB;text-align:right"
+              oninput="calcCalories()">
+            <span style="font-size:10px;color:var(--muted)">g</span>
+          </div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px">基準量（同じ）</div>
+          <div style="font-size:14px;font-family:DM Mono,monospace;padding:8px 4px;color:var(--muted)" id="calcProteinBaseDisplay">—</div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px">量（同じ）</div>
+          <div style="font-size:14px;font-family:DM Mono,monospace;padding:8px 4px;color:var(--muted)" id="calcProteinAmountDisplay">—</div>
         </div>
       </div>
-      <div>
-        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">実際の量</div>
-        <div style="display:flex;align-items:center;gap:2px">
-          <input type="text" id="calcAmount" placeholder="180" inputmode="decimal"
-            style="width:60px;font-size:16px;padding:6px 8px;border-radius:8px;border:none;background:white;text-align:right"
-            oninput="calcCalories()">
-          <span style="font-size:10px;color:var(--muted)">ml/g/個</span>
+
+      <!-- 計算結果 -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+        <div style="text-align:center;background:white;border-radius:10px;padding:10px">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px">カロリー結果</div>
+          <div style="font-family:DM Mono,monospace;font-size:24px;font-weight:700;color:var(--accent)" id="calcResult">—</div>
+          <div style="font-size:10px;color:var(--muted)">kcal</div>
+        </div>
+        <div style="text-align:center;background:#EDE9FB;border-radius:10px;padding:10px">
+          <div style="font-size:10px;color:var(--muted);margin-bottom:4px">タンパク質結果</div>
+          <div style="font-family:DM Mono,monospace;font-size:24px;font-weight:700;color:#5B4FCF" id="calcProteinResult">—</div>
+          <div style="font-size:10px;color:var(--muted)">g</div>
         </div>
       </div>
+
+      <button onclick="addCalcResult()"
+        style="width:100%;padding:12px;background:var(--green);border:none;border-radius:10px;
+        font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer">
+        ➕ 食事ログに追加（確定値）
+      </button>
     </div>
-    <div style="text-align:center;margin-bottom:12px">
-      <div style="font-size:11px;color:var(--muted);margin-bottom:4px">計算結果</div>
-      <div style="font-family:'DM Mono',monospace;font-size:28px;font-weight:700;color:var(--accent)" id="calcResult">—</div>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px">
-      <input type="text" id="calcLabel" placeholder="食品名（例：野菜ジュース）"
-        style="flex:1;font-size:13px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:white">
-    </div>
-    <button onclick="addCalcResult()"
-      style="width:100%;padding:12px;background:var(--green);border:none;border-radius:10px;
-      font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer">
-      ➕ 食事ログに追加（確定値）
-    </button>
-  </div>
+
+
 
   <!-- Meal Log -->
   <div class="card">
@@ -1360,39 +1405,156 @@ function showToast(msg) {
 }
 
 // ======== Calculator ========
-function calcCalories() {
+ function calcCalories() {
   const unit = parseFloat(document.getElementById('calcUnit').value.trim()) || 0;
-  const base = parseFloat(document.getElementById('calcBase').value) || 1;
+  const base = parseFloat(document.getElementById('calcBase').value.trim()) || 1;
   const amount = parseFloat(document.getElementById('calcAmount').value.trim()) || 0;
+  const proteinUnit = parseFloat(document.getElementById('calcProteinUnit').value.trim()) || 0;
+
+  // Update protein base/amount display
+  const baseDisplay = document.getElementById('calcProteinBaseDisplay');
+  const amountDisplay = document.getElementById('calcProteinAmountDisplay');
+  if (baseDisplay) baseDisplay.textContent = base ? base + ' ml/g' : '—';
+  if (amountDisplay) amountDisplay.textContent = amount ? amount + ' ml/g' : '—';
+
+  // Calorie result
   const resultEl = document.getElementById('calcResult');
-  if (unit > 0 && amount > 0) {
+  if (unit > 0 && base > 0 && amount > 0) {
     const result = Math.round((unit / base) * amount * 10) / 10;
-    resultEl.textContent = result + ' kcal';
+    resultEl.textContent = result;
     resultEl.dataset.value = result;
   } else {
-    resultEl.textContent = '\u2014';
+    resultEl.textContent = '—';
     resultEl.dataset.value = '0';
+  }
+
+  // Protein result
+  const proteinResultEl = document.getElementById('calcProteinResult');
+  if (proteinResultEl) {
+    if (proteinUnit > 0 && base > 0 && amount > 0) {
+      const proteinResult = Math.round((proteinUnit / base) * amount * 10) / 10;
+      proteinResultEl.textContent = proteinResult;
+      proteinResultEl.dataset.value = proteinResult;
+    } else {
+      proteinResultEl.textContent = '—';
+      proteinResultEl.dataset.value = '0';
+    }
   }
 }
 
-function addCalcResult() {
+
+ function addCalcResult() {
   const result = parseFloat(document.getElementById('calcResult').dataset.value) || 0;
-  const label = document.getElementById('calcLabel').value || '\u98df\u54c1';
-  if (!result) { showToast('\u26a0\ufe0f \u8a08\u7b97\u7d50\u679c\u304c\u3042\u308a\u307e\u305b\u3093'); return; }
-  addMealRow(label, result, 'calc');
+  const proteinResultEl = document.getElementById('calcProteinResult');
+  const proteinResult = parseFloat(proteinResultEl ? proteinResultEl.dataset.value : '0') || 0;
+  const label = document.getElementById('calcLabel').value || '食品';
+  if (!result) { showToast('⚠️ カロリーの計算結果がありません'); return; }
+
+  // Add meal row with both kcal and protein
+  mealCount++;
+  const icon = mealIcons[(mealCount - 5) % mealIcons.length];
+  const div = document.createElement('div');
+  div.className = 'meal-item';
+  div.style.flexWrap = 'wrap';
+  div.innerHTML = `
+    <div class="meal-icon">${icon}</div>
+    <div style="flex:1;min-width:80px">
+      <div class="meal-label">${label}</div>
+      <div class="meal-flag-wrap">
+        <button class="flag-btn confirmed active" onclick="toggleFlag(this)">✅ 確定</button>
+        <button class="flag-btn estimated" onclick="toggleFlag(this)">☆ 推定</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;align-items:center">
+      <div class="field-input-wrap">
+        <input type="text" class="meal-input meal-kcal" value="${result}" placeholder="0" inputmode="numeric">
+        <span class="unit">kcal</span>
+      </div>
+      <div class="field-input-wrap">
+        <input type="text" class="meal-input meal-protein" value="${proteinResult || ''}" placeholder="0" inputmode="decimal" style="width:60px;background:#EDE9FB">
+        <span class="unit" style="color:#5B4FCF">g P</span>
+      </div>
+    </div>`;
+  document.getElementById('mealList').appendChild(div);
+  updateAll();
+
+  // Clear calculator
   document.getElementById('calcUnit').value = '';
+  document.getElementById('calcProteinUnit').value = '';
   document.getElementById('calcAmount').value = '';
   document.getElementById('calcLabel').value = '';
-  document.getElementById('calcResult').textContent = '\u2014';
+  document.getElementById('calcResult').textContent = '—';
   document.getElementById('calcResult').dataset.value = '0';
-  showToast('\u2705 ' + label + '\uff08' + result + 'kcal\uff09\u3092\u8ffd\u52a0\u3057\u307e\u3057\u305f');
+  if (proteinResultEl) { proteinResultEl.textContent = '—'; proteinResultEl.dataset.value = '0'; }
+  const bd = document.getElementById('calcProteinBaseDisplay');
+  const ad = document.getElementById('calcProteinAmountDisplay');
+  if (bd) bd.textContent = '= calcBaseと同じ';
+  if (ad) ad.textContent = '= calcAmountと同じ';
+  showToast('✅ ' + label + '（' + result + 'kcal / ' + (proteinResult || 0) + 'g P）を追加');
+  // Save to food history
+  const kcalUnit = parseFloat(document.getElementById('calcUnit').value.trim()) || 0;
+  const base = parseFloat(document.getElementById('calcBase').value.trim()) || 1;
+  const proteinUnitVal = parseFloat(document.getElementById('calcProteinUnit').value.trim()) || 0;
+  saveFoodToHistory(label, kcalUnit, base, proteinUnitVal);
 }
+
 
 function toggleFlag(btn) {
   const wrap = btn.parentElement;
   wrap.querySelectorAll('.flag-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
 }
+
+// ======== Food History ========
+function getFoodHistory() {
+  return JSON.parse(localStorage.getItem('foodHistory') || '[]');
+}
+
+function saveFoodToHistory(label, kcalUnit, base, proteinUnit) {
+  if (!label || !kcalUnit || !base) return;
+  const history = getFoodHistory();
+  // Update if exists, else add
+  const idx = history.findIndex(f => f.label === label);
+  const entry = { label, kcalUnit, base, proteinUnit: proteinUnit || 0 };
+  if (idx >= 0) history[idx] = entry;
+  else history.unshift(entry);
+  // Keep max 30 items
+  localStorage.setItem('foodHistory', JSON.stringify(history.slice(0, 30)));
+  renderFoodHistoryDropdown();
+}
+
+function renderFoodHistoryDropdown() {
+  const sel = document.getElementById('calcHistory');
+  if (!sel) return;
+  const history = getFoodHistory();
+  sel.innerHTML = '<option value="">-- 食品を選択 --</option>';
+  history.forEach((f, i) => {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = f.label + '（' + f.kcalUnit + 'kcal/' + f.base + 'ml/g、P:' + f.proteinUnit + 'g）';
+    sel.appendChild(opt);
+  });
+}
+
+function loadFromHistory() {
+  const sel = document.getElementById('calcHistory');
+  const idx = parseInt(sel.value);
+  if (isNaN(idx)) return;
+  const history = getFoodHistory();
+  const food = history[idx];
+  if (!food) return;
+  document.getElementById('calcLabel').value = food.label;
+  document.getElementById('calcUnit').value = food.kcalUnit;
+  document.getElementById('calcBase').value = food.base;
+  document.getElementById('calcProteinUnit').value = food.proteinUnit || '';
+  document.getElementById('calcAmount').value = '';
+  calcCalories();
+  // Focus on 実際の量
+  setTimeout(() => document.getElementById('calcAmount').focus(), 100);
+}
+
+// Init dropdown on load
+renderFoodHistoryDropdown();
 
 // ======== Load today ========
 const existingToday = getHistory().find(r => r.date && r.date.startsWith(
