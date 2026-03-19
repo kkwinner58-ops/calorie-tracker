@@ -806,12 +806,43 @@
 <!-- ==================== TAB: 履歴 ==================== -->
 <div class="tab-content" id="tab-history">
 <div class="container">
+
+  <!-- デバイス同期カード -->
+  <div style="background:linear-gradient(135deg,#E3F0FB,#EBF4FD);border:1.5px solid var(--fix);border-radius:14px;padding:18px;margin-bottom:14px">
+    <div style="font-size:11px;font-weight:700;letter-spacing:0.1em;color:var(--fix);text-transform:uppercase;margin-bottom:4px;display:flex;align-items:center;gap:6px">
+      🔄 デバイス間データ同期
+    </div>
+    <p style="font-size:12px;color:var(--fix);margin-bottom:14px;line-height:1.7">
+      iPhone・Mac・iPad でデータを共有するには、メインデバイスで <strong>エクスポート</strong> → 別デバイスで <strong>インポート</strong> の順で操作してください。
+    </p>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <button onclick="exportJSON()"
+        style="padding:14px 8px;background:var(--fix);border:none;border-radius:10px;
+        font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:700;
+        color:white;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+        📤 エクスポート
+      </button>
+      <button onclick="document.getElementById('importFileInput').click()"
+        style="padding:14px 8px;background:white;border:1.5px solid var(--fix);border-radius:10px;
+        font-family:'Noto Sans JP',sans-serif;font-size:13px;font-weight:700;
+        color:var(--fix);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+        📥 インポート
+      </button>
+    </div>
+    <div id="importStatus" style="display:none;margin-top:10px;font-size:12px;line-height:1.6;padding:10px;border-radius:8px;background:white;color:var(--fix);border:1px solid rgba(21,101,192,0.2)"></div>
+    <p style="font-size:10px;color:var(--muted);margin-top:10px;line-height:1.6">
+      ⚠️ インポートすると現在のデバイスの全データが上書きされます。<br>
+      エクスポートファイルは Files アプリや iCloud Drive に保存して共有してください。
+    </p>
+  </div>
+
   <div class="history-list open" id="historyList" style="display:block"></div>
   <button class="export-btn" onclick="exportCSV()">📥 CSVダウンロード（Cowork用）</button>
 </div>
 </div>
 
 <div class="toast" id="toast"></div>
+<input type="file" id="importFileInput" accept=".json" style="display:none" onchange="importJSON(this)">
 
 <!-- Sticky Totals Footer - always visible -->
 <div class="sticky-totals">
@@ -1469,6 +1500,76 @@ function renderHistory() {
       <span class="history-balance ${cls}">${diffStr}</span>
     </div>`;
   }).join('');
+}
+
+// ======== Export / Import JSON (デバイス間同期) ========
+function exportJSON() {
+  const calHistory = getHistory();
+  const foodHistory = JSON.parse(localStorage.getItem('foodHistory') || '[]');
+  if (!calHistory.length && !foodHistory.length) { showToast('エクスポートするデータがありません'); return; }
+
+  const payload = {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    calHistory,
+    foodHistory
+  };
+  const json = JSON.stringify(payload, null, 2);
+  const today = new Date();
+  const dateStr = today.getFullYear() + '-' +
+    String(today.getMonth()+1).padStart(2,'0') + '-' +
+    String(today.getDate()).padStart(2,'0');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+  a.download = 'calorie-backup-' + dateStr + '.json';
+  a.click();
+  showToast('📤 ' + calHistory.length + '件のデータをエクスポートしました');
+}
+
+function importJSON(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const statusEl = document.getElementById('importStatus');
+    try {
+      const payload = JSON.parse(e.target.result);
+      if (!payload.calHistory) { throw new Error('形式が不正です'); }
+
+      const calCount = payload.calHistory.length;
+      const foodCount = (payload.foodHistory || []).length;
+
+      if (!confirm(
+        calCount + '件のカロリー記録と' + foodCount + '件の食品履歴をインポートします。\n' +
+        '現在のデータはすべて上書きされます。\nよろしいですか？'
+      )) {
+        input.value = '';
+        return;
+      }
+
+      localStorage.setItem('calHistory', JSON.stringify(payload.calHistory));
+      if (payload.foodHistory) {
+        localStorage.setItem('foodHistory', JSON.stringify(payload.foodHistory));
+      }
+
+      statusEl.style.display = 'block';
+      statusEl.style.background = 'var(--green-bg)';
+      statusEl.style.color = 'var(--green)';
+      statusEl.style.borderColor = 'var(--green)';
+      statusEl.textContent = '✅ インポート完了！' + calCount + '件の記録を復元しました。ページを再読み込みします…';
+
+      setTimeout(() => location.reload(), 1500);
+    } catch(err) {
+      const statusEl = document.getElementById('importStatus');
+      statusEl.style.display = 'block';
+      statusEl.style.background = 'var(--red-bg)';
+      statusEl.style.color = 'var(--red)';
+      statusEl.style.borderColor = 'var(--red)';
+      statusEl.textContent = '❌ エラー：' + err.message + '。有効なバックアップファイルを選択してください。';
+    }
+    input.value = '';
+  };
+  reader.readAsText(file);
 }
 
 // ======== Export CSV ========
