@@ -1478,6 +1478,14 @@ function showToast(msg) {
   document.getElementById('mealList').appendChild(div);
   updateAll();
 
+  // Save to food history BEFORE clearing
+  const kcalUnit = parseFloat(document.getElementById('calcUnit').value.trim()) || 0;
+  const base = parseFloat(document.getElementById('calcBase').value.trim()) || 1;
+  const proteinUnitVal = parseFloat(document.getElementById('calcProteinUnit').value.trim()) || 0;
+  if (label && label !== '食品' && kcalUnit > 0) {
+    saveFoodToHistory(label, kcalUnit, base, proteinUnitVal);
+  }
+
   // Clear calculator
   document.getElementById('calcUnit').value = '';
   document.getElementById('calcProteinUnit').value = '';
@@ -1488,14 +1496,10 @@ function showToast(msg) {
   if (proteinResultEl) { proteinResultEl.textContent = '—'; proteinResultEl.dataset.value = '0'; }
   const bd = document.getElementById('calcProteinBaseDisplay');
   const ad = document.getElementById('calcProteinAmountDisplay');
-  if (bd) bd.textContent = '= calcBaseと同じ';
-  if (ad) ad.textContent = '= calcAmountと同じ';
+  if (bd) bd.textContent = '—';
+  if (ad) ad.textContent = '—';
+  document.getElementById('calcHistory').value = '';
   showToast('✅ ' + label + '（' + result + 'kcal / ' + (proteinResult || 0) + 'g P）を追加');
-  // Save to food history
-  const kcalUnit = parseFloat(document.getElementById('calcUnit').value.trim()) || 0;
-  const base = parseFloat(document.getElementById('calcBase').value.trim()) || 1;
-  const proteinUnitVal = parseFloat(document.getElementById('calcProteinUnit').value.trim()) || 0;
-  saveFoodToHistory(label, kcalUnit, base, proteinUnitVal);
 }
 
 
