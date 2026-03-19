@@ -486,7 +486,7 @@
         <span class="unit">kg</span>
       </div>
     </div>
-    <div class="field-row" style="border-bottom:none">
+    <div class="field-row">
       <div>
         <div class="field-label">メンテナンスカロリー</div>
         <div class="field-sub">Mifflin式 × 1.375（自動計算）</div>
@@ -494,6 +494,16 @@
       <div class="field-input-wrap">
         <span class="auto-value" id="maintCalc">—</span>
         <span class="unit">kcal</span>
+      </div>
+    </div>
+    <div class="field-row" style="border-bottom:none">
+      <div>
+        <div class="field-label">目標タンパク質</div>
+        <div class="field-sub">体重 × 1.1（筋肉量維持）</div>
+      </div>
+      <div class="field-input-wrap">
+        <span class="auto-value" id="proteinGoal" style="color:#5B4FCF">—</span>
+        <span class="unit">g</span>
       </div>
     </div>
   </div>
@@ -556,69 +566,112 @@
   <div class="card">
     <div class="card-title">食事・飲み物ログ</div>
     <div id="mealList">
-      <div class="meal-item">
+      <div class="meal-item" style="flex-wrap:wrap">
         <div class="meal-icon">🌅</div>
-        <div style="flex:1">
+        <div style="flex:1;min-width:80px">
           <div class="meal-label">朝食</div>
           <div class="meal-flag-wrap">
             <button class="flag-btn confirmed active" onclick="toggleFlag(this)">✅ 確定</button>
             <button class="flag-btn estimated" onclick="toggleFlag(this)">☆ 推定</button>
           </div>
         </div>
-        <div class="field-input-wrap">
-          <input type="text" class="meal-input meal-kcal" placeholder="0" inputmode="numeric">
-          <span class="unit">kcal</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div class="field-input-wrap">
+            <input type="text" class="meal-input meal-kcal" placeholder="0" inputmode="numeric">
+            <span class="unit">kcal</span>
+          </div>
+          <div class="field-input-wrap">
+            <input type="text" class="meal-input meal-protein" placeholder="0" inputmode="decimal" style="width:60px;background:#EDE9FB">
+            <span class="unit" style="color:#5B4FCF">g P</span>
+          </div>
         </div>
       </div>
-      <div class="meal-item">
+      <div class="meal-item" style="flex-wrap:wrap">
         <div class="meal-icon">☀️</div>
-        <div style="flex:1">
+        <div style="flex:1;min-width:80px">
           <div class="meal-label">昼食</div>
           <div class="meal-flag-wrap">
             <button class="flag-btn confirmed" onclick="toggleFlag(this)">✅ 確定</button>
             <button class="flag-btn estimated active" onclick="toggleFlag(this)">☆ 推定</button>
           </div>
         </div>
-        <div class="field-input-wrap">
-          <input type="text" class="meal-input meal-kcal" placeholder="0" inputmode="numeric">
-          <span class="unit">kcal</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div class="field-input-wrap">
+            <input type="text" class="meal-input meal-kcal" placeholder="0" inputmode="numeric">
+            <span class="unit">kcal</span>
+          </div>
+          <div class="field-input-wrap">
+            <input type="text" class="meal-input meal-protein" placeholder="0" inputmode="decimal" style="width:60px;background:#EDE9FB">
+            <span class="unit" style="color:#5B4FCF">g P</span>
+          </div>
         </div>
       </div>
-      <div class="meal-item">
+      <div class="meal-item" style="flex-wrap:wrap">
         <div class="meal-icon">🌙</div>
-        <div style="flex:1">
+        <div style="flex:1;min-width:80px">
           <div class="meal-label">夕食</div>
           <div class="meal-flag-wrap">
             <button class="flag-btn confirmed" onclick="toggleFlag(this)">✅ 確定</button>
             <button class="flag-btn estimated active" onclick="toggleFlag(this)">☆ 推定</button>
           </div>
         </div>
-        <div class="field-input-wrap">
-          <input type="text" class="meal-input meal-kcal" placeholder="0" inputmode="numeric">
-          <span class="unit">kcal</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div class="field-input-wrap">
+            <input type="text" class="meal-input meal-kcal" placeholder="0" inputmode="numeric">
+            <span class="unit">kcal</span>
+          </div>
+          <div class="field-input-wrap">
+            <input type="text" class="meal-input meal-protein" placeholder="0" inputmode="decimal" style="width:60px;background:#EDE9FB">
+            <span class="unit" style="color:#5B4FCF">g P</span>
+          </div>
         </div>
       </div>
-      <div class="meal-item">
+      <div class="meal-item" style="flex-wrap:wrap">
         <div class="meal-icon">☕</div>
-        <div style="flex:1">
+        <div style="flex:1;min-width:80px">
           <div class="meal-label">間食・飲み物</div>
           <div class="meal-flag-wrap">
             <button class="flag-btn confirmed active" onclick="toggleFlag(this)">✅ 確定</button>
             <button class="flag-btn estimated" onclick="toggleFlag(this)">☆ 推定</button>
           </div>
         </div>
-        <div class="field-input-wrap">
-          <input type="text" class="meal-input meal-kcal" placeholder="0" inputmode="numeric">
-          <span class="unit">kcal</span>
+        <div style="display:flex;gap:6px;align-items:center">
+          <div class="field-input-wrap">
+            <input type="text" class="meal-input meal-kcal" placeholder="0" inputmode="numeric">
+            <span class="unit">kcal</span>
+          </div>
+          <div class="field-input-wrap">
+            <input type="text" class="meal-input meal-protein" placeholder="0" inputmode="decimal" style="width:60px;background:#EDE9FB">
+            <span class="unit" style="color:#5B4FCF">g P</span>
+          </div>
         </div>
       </div>
     </div>
     <button class="add-btn" onclick="addMealRow()">＋ 行を追加する</button>
     <div class="meal-total-row">
-      <div class="meal-total-label">合計摂取カロリー</div>
       <div>
-        <span class="meal-total-value" id="totalIntake">0</span>
-        <span class="unit" style="font-size:14px">kcal</span>
+        <div class="meal-total-label">合計摂取カロリー</div>
+        <div style="font-size:11px;color:var(--muted)" id="calorieGoalLabel">目標：— kcal</div>
+      </div>
+      <div style="text-align:right">
+        <div>
+          <span class="meal-total-value" id="totalIntake">0</span>
+          <span class="unit" style="font-size:14px">kcal</span>
+        </div>
+        <div style="font-size:12px;font-weight:700" id="calorieRemaining"></div>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-top:1px solid var(--border);margin-top:4px">
+      <div>
+        <div style="font-size:13px;font-weight:700;color:#5B4FCF">合計タンパク質</div>
+        <div style="font-size:11px;color:var(--muted)" id="proteinGoalLabel">目標：— g</div>
+      </div>
+      <div style="text-align:right">
+        <div>
+          <span style="font-family:DM Mono,monospace;font-size:24px;font-weight:700;color:#5B4FCF" id="totalProtein">0</span>
+          <span style="font-size:12px;color:var(--muted)"> g</span>
+        </div>
+        <div style="font-size:12px;font-weight:700" id="proteinRemaining"></div>
       </div>
     </div>
     <div class="balance-display neutral" id="balanceDisplay">
@@ -725,10 +778,53 @@ function updateAll() {
   maintEl.textContent = maint ? maint.toLocaleString() : '—';
   document.getElementById('summaryMaint').textContent = maint ? maint.toLocaleString() : '—';
 
+  // Protein goal
+  const proteinGoalEl = document.getElementById('proteinGoal');
+  const proteinGoalLabelEl = document.getElementById('proteinGoalLabel');
+  const proteinGoal = weight ? Math.round(weight * 1.1 * 10) / 10 : null;
+  if (proteinGoalEl) proteinGoalEl.textContent = proteinGoal ? proteinGoal : '—';
+
+  // Calorie total
   let total = 0;
   document.querySelectorAll('.meal-kcal').forEach(i => { total += parseFloat(i.value.trim()) || 0; });
   document.getElementById('totalIntake').textContent = total.toLocaleString();
   document.getElementById('summaryIntake').textContent = total.toLocaleString();
+
+  // Calorie remaining
+  const calorieGoalLabelEl = document.getElementById('calorieGoalLabel');
+  const calorieRemainingEl = document.getElementById('calorieRemaining');
+  if (calorieGoalLabelEl) calorieGoalLabelEl.textContent = '目標：' + (maint ? maint.toLocaleString() + ' kcal' : '— kcal');
+  if (calorieRemainingEl && maint) {
+    const remaining = maint - total;
+    if (remaining <= 0) {
+      calorieRemainingEl.textContent = '✅ 目標達成！';
+      calorieRemainingEl.style.color = 'var(--green)';
+    } else {
+      calorieRemainingEl.textContent = 'あと ' + remaining.toLocaleString() + ' kcal';
+      calorieRemainingEl.style.color = 'var(--accent)';
+    }
+  } else if (calorieRemainingEl) {
+    calorieRemainingEl.textContent = '';
+  }
+
+  // Protein total
+  let totalProtein = 0;
+  document.querySelectorAll('.meal-protein').forEach(i => { totalProtein += parseFloat(i.value.trim()) || 0; });
+  totalProtein = Math.round(totalProtein * 10) / 10;
+  const totalProteinEl = document.getElementById('totalProtein');
+  if (totalProteinEl) totalProteinEl.textContent = totalProtein;
+  if (proteinGoalLabelEl) proteinGoalLabelEl.textContent = '目標：' + (proteinGoal ? proteinGoal + ' g' : '— g');
+  const remainingProtein = proteinGoal ? Math.round((proteinGoal - totalProtein) * 10) / 10 : null;
+  const proteinRemainingEl = document.getElementById('proteinRemaining');
+  if (proteinRemainingEl && remainingProtein !== null) {
+    if (remainingProtein <= 0) {
+      proteinRemainingEl.textContent = '✅ 目標達成！';
+      proteinRemainingEl.style.color = 'var(--green)';
+    } else {
+      proteinRemainingEl.textContent = 'あと ' + remainingProtein + 'g';
+      proteinRemainingEl.style.color = '#5B4FCF';
+    }
+  }
 
   const bd = document.getElementById('balanceDisplay');
   const bl = document.getElementById('balanceLabel');
@@ -750,7 +846,7 @@ function updateAll() {
 }
 
 document.getElementById('weightInput').addEventListener('input', updateAll);
-document.addEventListener('input', e => { if (e.target.classList.contains('meal-kcal') || e.target.id === 'weightInput') updateAll(); });
+document.addEventListener('input', e => { if (e.target.classList.contains('meal-kcal') || e.target.classList.contains('meal-protein') || e.target.id === 'weightInput') updateAll(); });
 
 const mealIcons = ['🍱','🍜','🥗','🍎','🧃','🍵','🍺','🍙','🥤','🫖','🍞','🥩'];
 let mealCount = 4;
@@ -761,18 +857,25 @@ function addMealRow(label='その他', kcal='', source='') {
   const isConfirmed = source === 'calc';
   const div = document.createElement('div');
   div.className = 'meal-item';
+  div.style.flexWrap = 'wrap';
   div.innerHTML = `
     <div class="meal-icon">${icon}</div>
-    <div style="flex:1">
+    <div style="flex:1;min-width:80px">
       <div class="meal-label">${label}</div>
       <div class="meal-flag-wrap">
         <button class="flag-btn confirmed ${isConfirmed ? 'active' : ''}" onclick="toggleFlag(this)">✅ 確定</button>
         <button class="flag-btn estimated ${!isConfirmed ? 'active' : ''}" onclick="toggleFlag(this)">☆ 推定</button>
       </div>
     </div>
-    <div class="field-input-wrap">
-      <input type="text" class="meal-input meal-kcal" value="${kcal}" placeholder="0" inputmode="numeric">
-      <span class="unit">kcal</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <div class="field-input-wrap">
+        <input type="text" class="meal-input meal-kcal" value="${kcal}" placeholder="0" inputmode="numeric">
+        <span class="unit">kcal</span>
+      </div>
+      <div class="field-input-wrap">
+        <input type="text" class="meal-input meal-protein" placeholder="0" inputmode="decimal" style="width:60px;background:#EDE9FB">
+        <span class="unit" style="color:#5B4FCF">g P</span>
+      </div>
     </div>`;
   document.getElementById('mealList').appendChild(div);
   updateAll();
@@ -786,19 +889,24 @@ function saveRecord() {
 
   // Save meal-level data with confirmed/estimated flags
   const meals = [];
+  let totalProteinSave = 0;
   document.querySelectorAll('#mealList .meal-item').forEach(item => {
     const kcalInput = item.querySelector('.meal-kcal');
+    const proteinInput = item.querySelector('.meal-protein');
     const labelEl = item.querySelector('.meal-label');
     const confirmedBtn = item.querySelector('.flag-btn.confirmed');
     const kcal = parseFloat(kcalInput ? kcalInput.value.trim() : 0) || 0;
+    const protein = parseFloat(proteinInput ? proteinInput.value.trim() : 0) || 0;
     if (kcal > 0) {
       const isConfirmed = confirmedBtn && confirmedBtn.classList.contains('active');
       meals.push({
         name: labelEl ? labelEl.textContent : 'その他',
         kcal: kcal,
+        protein: protein,
         confirmed: isConfirmed
       });
       total += kcal;
+      totalProteinSave += protein;
     }
   });
 
@@ -810,6 +918,8 @@ function saveRecord() {
     weight, maint: maint || '', intake: total,
     balance: maint ? total - maint : '',
     meals: meals,
+    totalProtein: totalProteinSave,
+    proteinGoal: weight ? Math.round(weight * 1.1 * 10) / 10 : null,
     correctedIntake: null, correctionNote: ''
   };
 
@@ -858,6 +968,10 @@ function renderFixContent(record) {
   const prevIntake = record.intake || 0;
   const meals = record.meals || [];
   const estimatedMeals = meals.filter(m => !m.confirmed);
+  // Store for remaining correction calculation
+  window._totalIntake = prevIntake;
+  window._origEstimatedTotal = estimatedMeals.reduce((s,m) => s+m.kcal, 0);
+  window._origDiff = null;
 
   // Build estimated meals list HTML
   const estimatedMealsHTML = estimatedMeals.length > 0 ? `
@@ -878,11 +992,29 @@ function renderFixContent(record) {
           </div>
         </div>
       `).join('')}
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;padding-top:8px">
-        <span style="font-size:12px;color:var(--muted)">推定合計</span>
-        <span style="font-family:DM Mono,monospace;font-weight:700;font-size:16px;color:#F57F17" id="estimatedSubtotal">
-          ${estimatedMeals.reduce((s,m) => s+m.kcal, 0).toLocaleString()} kcal
-        </span>
+      <div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(245,127,23,0.2)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-size:12px;color:var(--muted)">推定合計</span>
+          <span style="font-family:DM Mono,monospace;font-size:14px;color:var(--muted)" id="estimatedSubtotal">
+            ${estimatedMeals.reduce((s,m) => s+m.kcal, 0).toLocaleString()} kcal
+          </span>
+        </div>
+        <div style="background:white;border-radius:8px;padding:10px 12px;border:1.5px solid #F57F17">
+          <div style="font-size:11px;color:var(--muted);margin-bottom:4px">📉 残り修正量（逆算結果との差）</div>
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:11px;color:var(--muted);line-height:1.6">
+              各食事を修正するとここが<br>0に近づきます
+            </div>
+            <div>
+              <span style="font-family:DM Mono,monospace;font-weight:700;font-size:28px;" id="remainingCorrection">—</span>
+              <span style="font-size:12px;color:var(--muted)"> kcal</span>
+            </div>
+          </div>
+          <div style="margin-top:8px;height:6px;background:var(--border);border-radius:3px;overflow:hidden">
+            <div id="correctionProgressBar" style="height:100%;border-radius:3px;width:0%;transition:width 0.3s"></div>
+          </div>
+          <div style="font-size:10px;color:var(--muted);margin-top:4px;text-align:right" id="correctionProgressLabel"></div>
+        </div>
       </div>
     </div>` : `
     <div style="background:var(--green-bg);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--green)">
@@ -958,8 +1090,54 @@ function updateEstimatedTotal() {
   document.querySelectorAll('.fix-meal-input').forEach(inp => {
     total += parseFloat(inp.value) || 0;
   });
-  const el = document.getElementById('estimatedSubtotal');
-  if (el) el.textContent = total.toLocaleString() + ' kcal';
+
+  const subtotalEl = document.getElementById('estimatedSubtotal');
+  if (subtotalEl) subtotalEl.textContent = total.toLocaleString() + ' kcal';
+
+  // Update remaining correction counter
+  const remainingEl = document.getElementById('remainingCorrection');
+  const progressBar = document.getElementById('correctionProgressBar');
+  const progressLabel = document.getElementById('correctionProgressLabel');
+  if (!remainingEl) return;
+
+  // Get back-calculated actual intake
+  const backCalcEl = document.getElementById('backCalcKcal');
+  if (!backCalcEl || !backCalcEl.textContent || backCalcEl.textContent === '') return;
+  const actualIntake = parseFloat(backCalcEl.textContent.replace(/,/g, '')) || 0;
+  if (!actualIntake) return;
+
+  // Get original estimated total from before any corrections
+  const origEstimated = window._origEstimatedTotal || total;
+  if (!window._origEstimatedTotal) window._origEstimatedTotal = total;
+
+  // confirmed total (non-estimated meals)
+  const confirmedTotal = (window._totalIntake || 0) - origEstimated;
+  const newTotal = confirmedTotal + total;
+  const remaining = newTotal - actualIntake;
+
+  const sign = remaining > 0 ? '+' : '';
+  remainingEl.textContent = sign + Math.round(remaining).toLocaleString();
+  remainingEl.style.color = remaining === 0 ? 'var(--green)' :
+                             Math.abs(remaining) < 50 ? '#F57F17' : 'var(--red)';
+
+  // Progress bar
+  const maxDiff = window._origDiff || Math.abs(remaining);
+  if (!window._origDiff && remaining !== 0) window._origDiff = Math.abs(remaining);
+  const progress = maxDiff > 0 ? Math.max(0, Math.min(100, ((maxDiff - Math.abs(remaining)) / maxDiff) * 100)) : 100;
+  progressBar.style.width = progress + '%';
+  progressBar.style.background = remaining === 0 ? 'var(--green)' :
+                                  Math.abs(remaining) < 50 ? '#F57F17' : 'var(--red)';
+
+  if (remaining === 0) {
+    progressLabel.textContent = '✅ 補正完了！';
+    progressLabel.style.color = 'var(--green)';
+  } else if (Math.abs(remaining) < 50) {
+    progressLabel.textContent = 'あと少し...';
+    progressLabel.style.color = '#F57F17';
+  } else {
+    progressLabel.textContent = `${Math.abs(Math.round(remaining))}kcal ${remaining > 0 ? '減らして' : '増やして'}ください`;
+    progressLabel.style.color = 'var(--muted)';
+  }
 }
 
 function calcBackward(prevWeight, prevMaint, prevIntake) {
@@ -978,6 +1156,8 @@ function calcBackward(prevWeight, prevMaint, prevIntake) {
   document.getElementById('weightDiffDisplay').textContent = (weightDiff >= 0 ? '+' : '') + weightDiff;
   document.getElementById('kcalDiffDisplay').textContent = (kcalDiff >= 0 ? '+' : '') + kcalDiff.toLocaleString() + '（100g≒45kcal換算）';
   document.getElementById('backCalcKcal').textContent = actualIntake.toLocaleString();
+  window._origDiff = null;
+  updateEstimatedTotal();
   document.getElementById('fixCorrectedDisplay').textContent = actualIntake.toLocaleString();
 
   const diff = actualIntake - prevIntake;
