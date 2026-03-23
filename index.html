@@ -1758,14 +1758,40 @@ if (existingToday) {
   document.getElementById('weightInput').value = existingToday.weight || '';
 
   // Restore meal data into UI
+  // 固定スロット名：名前照合で正しいスロットへ復元する
+  // 朝食・昼食・夕食・間食・飲み物 以外は新規行として末尾に追加
   if (existingToday.meals && existingToday.meals.length > 0) {
-    const mealItems = document.querySelectorAll('#mealList .meal-item');
-    existingToday.meals.forEach((m, i) => {
-      let targetItem;
-      if (i < mealItems.length) {
-        targetItem = mealItems[i];
+    const FIXED_NAMES = ['朝食', '昼食', '夕食', '間食・飲み物'];
+
+    function fillTargetItem(targetItem, m) {
+      const kcalInput = targetItem.querySelector('.meal-kcal');
+      const proteinInput = targetItem.querySelector('.meal-protein');
+      const confirmedBtn = targetItem.querySelector('.flag-btn.confirmed');
+      const estimatedBtn = targetItem.querySelector('.flag-btn.estimated');
+      if (kcalInput) kcalInput.value = m.kcal || '';
+      if (proteinInput) proteinInput.value = m.protein || '';
+      if (confirmedBtn && estimatedBtn) {
+        if (m.confirmed) {
+          confirmedBtn.classList.add('active');
+          estimatedBtn.classList.remove('active');
+        } else {
+          confirmedBtn.classList.remove('active');
+          estimatedBtn.classList.add('active');
+        }
+      }
+    }
+
+    existingToday.meals.forEach((m) => {
+      if (FIXED_NAMES.includes(m.name)) {
+        // 名前で固定スロットを検索して復元
+        let targetItem = null;
+        document.querySelectorAll('#mealList .meal-item').forEach(item => {
+          const labelEl = item.querySelector('.meal-label');
+          if (labelEl && labelEl.textContent.trim() === m.name) targetItem = item;
+        });
+        if (targetItem) fillTargetItem(targetItem, m);
       } else {
-        // Add new row
+        // 食事以外（飲み物・間食等）は新規行として末尾に追加
         mealCount++;
         const icon = mealIcons[(mealCount - 5) % mealIcons.length];
         const div = document.createElement('div');
@@ -1792,25 +1818,7 @@ if (existingToday) {
             </div>
           </div>`;
         document.getElementById('mealList').appendChild(div);
-        targetItem = div;
-      }
-
-      if (targetItem) {
-        const kcalInput = targetItem.querySelector('.meal-kcal');
-        const proteinInput = targetItem.querySelector('.meal-protein');
-        const confirmedBtn = targetItem.querySelector('.flag-btn.confirmed');
-        const estimatedBtn = targetItem.querySelector('.flag-btn.estimated');
-        if (kcalInput) kcalInput.value = m.kcal || '';
-        if (proteinInput) proteinInput.value = m.protein || '';
-        if (confirmedBtn && estimatedBtn) {
-          if (m.confirmed) {
-            confirmedBtn.classList.add('active');
-            estimatedBtn.classList.remove('active');
-          } else {
-            confirmedBtn.classList.remove('active');
-            estimatedBtn.classList.add('active');
-          }
-        }
+        fillTargetItem(div, m);
       }
     });
   }
