@@ -1330,8 +1330,8 @@ function calcBackward(prevWeight, prevMaint, prevIntake) {
   const acc = Math.max(0, 100 - pct);
 
   let badge = '';
-  if (diff > 0) badge = `<span class="diff-badge over">推定より +${diff.toLocaleString()} kcal 多かった</span>`;
-  else if (diff < 0) badge = `<span class="diff-badge under">推定より ${Math.abs(diff).toLocaleString()} kcal 少なかった</span>`;
+  if (diff > 0) badge = `<span class="diff-badge over">推定が ${diff.toLocaleString()} kcal 少なかった</span>`;
+  else if (diff < 0) badge = `<span class="diff-badge under">推定が ${Math.abs(diff).toLocaleString()} kcal 多かった</span>`;
   else badge = `<span class="diff-badge exact">推定通り</span>`;
   document.getElementById('diffBadgeWrap').innerHTML = badge;
 
@@ -1758,8 +1758,7 @@ if (existingToday) {
   document.getElementById('weightInput').value = existingToday.weight || '';
 
   // Restore meal data into UI
-  // 固定スロット名：名前照合で正しいスロットへ復元する
-  // 朝食・昼食・夕食・間食・飲み物 以外は新規行として末尾に追加
+  // 名前照合方式：朝食・昼食・夕食・間食・飲み物は固定スロットへ、それ以外は新規行として追加
   if (existingToday.meals && existingToday.meals.length > 0) {
     const FIXED_NAMES = ['朝食', '昼食', '夕食', '間食・飲み物'];
 
@@ -1783,7 +1782,6 @@ if (existingToday) {
 
     existingToday.meals.forEach((m) => {
       if (FIXED_NAMES.includes(m.name)) {
-        // 名前で固定スロットを検索して復元
         let targetItem = null;
         document.querySelectorAll('#mealList .meal-item').forEach(item => {
           const labelEl = item.querySelector('.meal-label');
@@ -1791,7 +1789,6 @@ if (existingToday) {
         });
         if (targetItem) fillTargetItem(targetItem, m);
       } else {
-        // 食事以外（飲み物・間食等）は新規行として末尾に追加
         mealCount++;
         const icon = mealIcons[(mealCount - 5) % mealIcons.length];
         const div = document.createElement('div');
