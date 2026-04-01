@@ -639,6 +639,18 @@
         </div>
       </div>
 
+      <!-- 追加先セレクター -->
+      <div style="margin-bottom:10px">
+        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">📌 追加先スロット</div>
+        <select id="calcTarget"
+          style="width:100%;font-size:14px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:white;color:var(--text)">
+          <option value="new">➕ 新規行として追加</option>
+          <option value="朝食">🌅 朝食</option>
+          <option value="昼食">☀️ 昼食</option>
+          <option value="夕食">🌙 夕食</option>
+          <option value="間食・飲み物">☕ 間食・飲み物</option>
+        </select>
+      </div>
       <button onclick="addCalcResult()"
         style="width:100%;padding:12px;background:var(--green);border:none;border-radius:10px;
         font-family:'Noto Sans JP',sans-serif;font-size:14px;font-weight:700;color:white;cursor:pointer">
@@ -1665,8 +1677,32 @@ function showToast(msg) {
         <span class="unit" style="color:#5B4FCF">g P</span>
       </div>
     </div>`;
-  document.getElementById('mealList').appendChild(div);
-  updateAll();
+  // 追加先スロットの処理
+  const targetSlot = document.getElementById('calcTarget') ? document.getElementById('calcTarget').value : 'new';
+  if (targetSlot !== 'new') {
+    let slotItem = null;
+    document.querySelectorAll('#mealList .meal-item').forEach(item => {
+      const labelEl = item.querySelector('.meal-label');
+      if (labelEl && labelEl.textContent.trim() === targetSlot) slotItem = item;
+    });
+    if (slotItem) {
+      const slotKcal = slotItem.querySelector('.meal-kcal');
+      const slotProtein = slotItem.querySelector('.meal-protein');
+      const slotConfirmed = slotItem.querySelector('.flag-btn.confirmed');
+      const slotEstimated = slotItem.querySelector('.flag-btn.estimated');
+      if (slotKcal) slotKcal.value = result;
+      if (slotProtein) slotProtein.value = proteinResult || '';
+      if (slotConfirmed) slotConfirmed.classList.add('active');
+      if (slotEstimated) slotEstimated.classList.remove('active');
+      updateAll();
+    } else {
+      document.getElementById('mealList').appendChild(div);
+      updateAll();
+    }
+  } else {
+    document.getElementById('mealList').appendChild(div);
+    updateAll();
+  }
 
   // Save to food history BEFORE clearing
   const kcalUnit = parseFloat(document.getElementById('calcUnit').value.trim()) || 0;
