@@ -1548,8 +1548,8 @@ function openHistoryEditor() {
       <div style="display:flex;align-items:center;justify-content:space-between;
         padding:10px 8px;border-bottom:1px solid var(--border)">
         <div style="flex:1;font-size:13px;color:var(--text);line-height:1.4">
-          <div style="font-weight:600">${item.name}</div>
-          <div style="font-size:11px;color:var(--muted)">${item.baseKcal}kcal / ${item.baseAmount}${item.unit || 'ml/g'}　P:${item.baseProtein || 0}g</div>
+          <div style="font-weight:600">${item.label}</div>
+          <div style="font-size:11px;color:var(--muted)">${item.kcalUnit}kcal / ${item.base}ml/g　P:${item.proteinUnit || 0}g</div>
         </div>
         <button onclick="deleteFoodHistory(${i})"
           style="margin-left:12px;padding:6px 14px;border-radius:8px;border:1px solid var(--red,#e53935);
@@ -1568,7 +1568,7 @@ function closeHistoryEditor() {
 
 function deleteFoodHistory(index) {
   const history = JSON.parse(localStorage.getItem('foodHistory') || '[]');
-  const name = history[index]?.name || '';
+  const name = history[index]?.label || '';
   if (!confirm(`「${name}」を履歴から削除しますか？`)) return;
   history.splice(index, 1);
   localStorage.setItem('foodHistory', JSON.stringify(history));
