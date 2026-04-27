@@ -557,11 +557,34 @@
 
       <!-- 履歴プルダウン -->
       <div style="margin-bottom:12px">
-        <div style="font-size:11px;color:var(--muted);margin-bottom:4px">📋 食品履歴から選択（2回目以降）</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+          <div style="font-size:11px;color:var(--muted)">📋 食品履歴から選択（2回目以降）</div>
+          <button onclick="openHistoryEditor()"
+            style="font-size:11px;padding:3px 10px;border-radius:6px;border:1px solid var(--border);
+            background:white;color:var(--muted);cursor:pointer;font-family:'Noto Sans JP',sans-serif">
+            ✏️ 履歴を編集
+          </button>
+        </div>
         <select id="calcHistory" onchange="loadFromHistory()"
           style="width:100%;font-size:14px;padding:8px 10px;border-radius:8px;border:1px solid var(--border);background:white;color:var(--text)">
           <option value="">-- 食品を選択 --</option>
         </select>
+      </div>
+
+      <!-- 食品履歴編集モーダル -->
+      <div id="historyEditorOverlay"
+        style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9000;align-items:center;justify-content:center">
+        <div style="background:white;border-radius:16px;width:90%;max-width:480px;max-height:75vh;display:flex;flex-direction:column;overflow:hidden">
+          <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+            <div style="font-size:15px;font-weight:700;color:var(--text)">📋 食品履歴の編集</div>
+            <button onclick="closeHistoryEditor()"
+              style="font-size:18px;border:none;background:none;cursor:pointer;color:var(--muted);padding:4px 8px">✕</button>
+          </div>
+          <div id="historyEditorList" style="overflow-y:auto;padding:10px 12px;flex:1"></div>
+          <div style="padding:12px 18px;border-top:1px solid var(--border);font-size:11px;color:var(--muted)">
+            削除した食品は食品履歴から完全に除去されます。
+          </div>
+        </div>
       </div>
 
       <!-- 食品名 -->
@@ -1512,6 +1535,46 @@ function renderHistory() {
       <span class="history-balance ${cls}">${diffStr}</span>
     </div>`;
   }).join('');
+}
+
+// ======== 食品履歴編集 ========
+function openHistoryEditor() {
+  const history = JSON.parse(localStorage.getItem('foodHistory') || '[]');
+  const listEl = document.getElementById('historyEditorList');
+  if (!history.length) {
+    listEl.innerHTML = '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">食品履歴がありません</div>';
+  } else {
+    listEl.innerHTML = history.map((item, i) => `
+      <div style="display:flex;align-items:center;justify-content:space-between;
+        padding:10px 8px;border-bottom:1px solid var(--border)">
+        <div style="flex:1;font-size:13px;color:var(--text);line-height:1.4">
+          <div style="font-weight:600">${item.name}</div>
+          <div style="font-size:11px;color:var(--muted)">${item.baseKcal}kcal / ${item.baseAmount}${item.unit || 'ml/g'}　P:${item.baseProtein || 0}g</div>
+        </div>
+        <button onclick="deleteFoodHistory(${i})"
+          style="margin-left:12px;padding:6px 14px;border-radius:8px;border:1px solid var(--red,#e53935);
+          background:white;color:var(--red,#e53935);font-size:12px;font-weight:700;cursor:pointer;
+          font-family:'Noto Sans JP',sans-serif;white-space:nowrap">
+          🗑 削除
+        </button>
+      </div>`).join('');
+  }
+  document.getElementById('historyEditorOverlay').style.display = 'flex';
+}
+
+function closeHistoryEditor() {
+  document.getElementById('historyEditorOverlay').style.display = 'none';
+}
+
+function deleteFoodHistory(index) {
+  const history = JSON.parse(localStorage.getItem('foodHistory') || '[]');
+  const name = history[index]?.name || '';
+  if (!confirm(`「${name}」を履歴から削除しますか？`)) return;
+  history.splice(index, 1);
+  localStorage.setItem('foodHistory', JSON.stringify(history));
+  updateHistorySelect();
+  openHistoryEditor(); // リストを再描画
+  showToast(`🗑 「${name}」を削除しました`);
 }
 
 // ======== Export / Import JSON (デバイス間同期) ========
