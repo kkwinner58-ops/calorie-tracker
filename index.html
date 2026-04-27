@@ -1572,8 +1572,8 @@ function deleteFoodHistory(index) {
   if (!confirm(`「${name}」を履歴から削除しますか？`)) return;
   history.splice(index, 1);
   localStorage.setItem('foodHistory', JSON.stringify(history));
-  updateHistorySelect();
-  openHistoryEditor(); // リストを再描画
+  renderFoodHistoryDropdown(); // プルダウンを即更新
+  openHistoryEditor();         // モーダルリストを即再描画
   showToast(`🗑 「${name}」を削除しました`);
 }
 
